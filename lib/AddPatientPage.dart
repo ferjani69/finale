@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-
-import 'CameraScreen.dart';
 class AddPatientPage extends StatelessWidget {
   final GlobalKey<FormState> _formkey = GlobalKey<FormState>();
 
@@ -33,16 +31,10 @@ class AddPatientPage extends StatelessWidget {
         actions: [
           IconButton(
             padding: const EdgeInsets.only(right: 30.0), // Adjust the padding as needed for spacing
-            onPressed: () {onPressed: () {
-              // Navigate to the camera screen
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => CameraScreen()),
-              );
-            };
+            onPressed: () {
               // Action to perform when the camera icon is pressed
             },
-            icon: Icon(Icons.camera_alt),
+            icon: const Icon(Icons.camera_alt),
           ),
         ],
       ),
