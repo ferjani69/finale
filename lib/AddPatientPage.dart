@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 class AddPatientPage extends StatelessWidget {
   final GlobalKey<FormState> _formkey = GlobalKey<FormState>();
 
@@ -20,6 +21,18 @@ class AddPatientPage extends StatelessWidget {
     }
     return null;
   }
+  Future<void> _openCamera(BuildContext context) async {
+    final ImagePicker _picker = ImagePicker();
+    final XFile? image = await _picker.pickImage(source: ImageSource.camera);
+
+    if (image != null) {
+      // Handle the captured image
+      // You can process the captured image here
+    } else {
+      // Handle if no image is captured
+    }
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -32,7 +45,7 @@ class AddPatientPage extends StatelessWidget {
           IconButton(
             padding: const EdgeInsets.only(right: 30.0), // Adjust the padding as needed for spacing
             onPressed: () {
-              // Action to perform when the camera icon is pressed
+              _openCamera(context);
             },
             icon: const Icon(Icons.camera_alt),
           ),

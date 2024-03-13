@@ -31,7 +31,9 @@ dependencies:
   search_page: ^2.3.0
   flutter_form_builder: ^9.2.1
   flutter_auto_form: ^1.0.6
-
+  image_picker: ^1.0.7
+  camera: ^0.10.5+9
+  permission_handler: ^9.0.0
   flutter:
     sdk: flutter
 

@@ -3,6 +3,7 @@ import 'package:search/AddPatientPage.dart';
 import 'package:search/patient.dart';
 import 'package:search/edit_patient_page.dart';
 import 'ptientsList.dart';
+import 'package:search/ViewPatientPage.dart';
 void main() {
   runApp(const MyApp());
 }
@@ -25,6 +26,8 @@ class SearchPage extends StatefulWidget {
   @override
   State<SearchPage> createState() => _SearchPageState();
 }
+
+
 
 
 
@@ -94,6 +97,7 @@ class _SearchPageState extends State<SearchPage> {
             ),
             const SizedBox(height: 10.00,),
             TextField(
+
               onChanged: (value) => updatelist(value),
               decoration: InputDecoration(
                 filled: true,
@@ -116,6 +120,7 @@ class _SearchPageState extends State<SearchPage> {
                         // Action to perform when the "Add Patient" button is pressed
                         // For example, you can navigate to a new screen to add a patient
                       },
+
                       icon: const Icon(Icons.person_add),
                       color: Colors.white,
                     ),
@@ -128,9 +133,19 @@ class _SearchPageState extends State<SearchPage> {
             const SizedBox(height: 10.00,),
             Expanded(
               child: ListView.builder(
-                itemCount: display_list.length,
 
-                itemBuilder: (BuildContext context, index) => Container(
+                itemCount: display_list.length,
+                itemBuilder: (BuildContext context, index) => GestureDetector(
+                  onTap: () {
+                    // Navigate to the view patient page with the selected patient's details
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ViewPatientPage(patient: display_list[index]),
+                      ),
+                    );
+                  },
+                  child : Container(
                   width: MediaQuery.of(context).size.width,
                   padding: const EdgeInsets.all(8.0),
                   child: Card(
@@ -199,7 +214,7 @@ class _SearchPageState extends State<SearchPage> {
                   ),
                 ),
               ),
-            ),
+            ),)
           ],
         ),
       ),
