@@ -1,4 +1,6 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:search/AddPatientPage.dart';
 import 'package:search/patient.dart';
 import 'package:search/edit_patient_page.dart';
@@ -133,7 +135,6 @@ class _SearchPageState extends State<SearchPage> {
             const SizedBox(height: 10.00,),
             Expanded(
               child: ListView.builder(
-
                 itemCount: display_list.length,
                 itemBuilder: (BuildContext context, index) => GestureDetector(
                   onTap: () {
@@ -182,7 +183,7 @@ class _SearchPageState extends State<SearchPage> {
                               ),
                               )],
                           ),
-
+                          SizedBox(width: 16.0),
                           Container(
                             margin: const EdgeInsets.only(top: 15.0,),
                             child: Text(
@@ -195,20 +196,52 @@ class _SearchPageState extends State<SearchPage> {
                           ),
                           Container(
                             alignment: Alignment.center,
-                            padding: const EdgeInsets.symmetric(horizontal: 5.0,vertical: 5.0),
-                            child: FilledButton(
-                              style: FilledButton.styleFrom(backgroundColor: const Color(0xff91C8E4)),
-
-                              onPressed: () =>
-                                  editPatientDetails(display_list[index]),
-
-                              child: const Text(
-                                "Edit",
-                                style: TextStyle(color: Color(0xff4682A9),
-                              ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              children: [
+                                IconButton(
+                                  icon: Icon(Icons.edit),
+                                  color: const Color(0xff4682A9),
+                                  onPressed: () => editPatientDetails(display_list[index]),
+                                ),
+                              ],
                             ),
                           ),
-                          )],
+
+                          Container(
+                            child: IconButton(
+                              onPressed: () {
+                                showDialog(
+                                  context: context,
+                                  builder: (BuildContext context) {
+                                    return AlertDialog(
+                                      title: const Text('Confirm Delete'),
+                                      content: const Text('Are you sure you want to delete this patient?'),
+                                      actions: <Widget>[
+                                        TextButton(
+                                          onPressed: () {
+                                            // Close the dialog and do nothing
+                                            Navigator.of(context).pop();
+                                          },
+                                          child: const Text('No'),
+                                        ),
+                                        TextButton(
+                                          onPressed: () {
+                                            // Add code to delete the patient
+                                            // After deleting, close the dialog
+                                            Navigator.of(context).pop();
+                                          },
+                                          child: const Text('Yes'),
+                                        ),
+                                      ],
+                                    );
+                                  },
+                                );
+                              },
+                              icon: const Icon(Icons.delete, color: Colors.red),
+                            ),
+                          )
+                        ],
                       ),
                     ),
                   ),

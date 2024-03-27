@@ -13,15 +13,24 @@ class AddPatientPage extends StatelessWidget {
     }
   }
 
-  String? _validatePhonenumber(value) {
-    if (value!.isEmpty) {
-      return 'please enter a phone number';
+  String? _validatePhonenumber(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Please enter a phone number';
     }
+
+    // Check if the value consists only of numeric characters
+    if (!value.contains(RegExp(r'^[0-9]*$'))) {
+      return 'Please enter a valid phone number (numbers only)';
+    }
+
+    // Check if the length of the phone number is not equal to 8 digits
     if (value.length != 8) {
-      return 'please enter a valid number';
+      return 'Please enter a valid 8-digit phone number';
     }
+
     return null;
   }
+
 
 
   @override
@@ -62,10 +71,16 @@ class AddPatientPage extends StatelessWidget {
                           borderRadius: BorderRadius.circular(10.0))),
                   validator: (value) {
                     if (value!.isEmpty) {
-                      return "please enter a First name";
+                      return "Please enter a first name";
+                    }
+                    // Check if the value contains only alphabetic characters, and optionally spaces
+                    if (!RegExp(r'^[a-zA-Z]+(?:\s[a-zA-Z]+)*$').hasMatch(value)) {
+                      return "Please enter a valid first name containing only alphabetic characters, and optionally separated by spaces";
                     }
                     return null;
                   },
+
+
                 ),
                 const SizedBox(height: 16.0),
                 TextFormField(
@@ -76,10 +91,15 @@ class AddPatientPage extends StatelessWidget {
                           borderRadius: BorderRadius.circular(10.0))),
                   validator: (value) {
                     if (value!.isEmpty) {
-                      return "please enter a Last name";
+                      return "Please enter a first name";
+                    }
+                    // Check if the value contains only alphabetic characters
+                    if (!RegExp(r'^[a-zA-Z]+$').hasMatch(value)) {
+                      return "Please enter a valid first name containing only alphabetic characters";
                     }
                     return null;
                   },
+
                 ),
                 const SizedBox(height: 16.0),
                 TextFormField(
@@ -113,10 +133,15 @@ class AddPatientPage extends StatelessWidget {
                           borderRadius: BorderRadius.circular(10.0))),
                   validator: (value) {
                     if (value!.isEmpty) {
-                      return "please enter an adress";
+                      return "Please enter a first name";
+                    }
+                    // Check if the value contains only alphabetic characters, spaces, and periods (.)
+                    if (!RegExp(r'^[a-zA-Z\s.]+$').hasMatch(value)) {
+                      return "Please enter a valid first name containing only alphabetic characters, spaces, and periods";
                     }
                     return null;
                   },
+
                 ),
                 const SizedBox(height: 16.0),
                 TextFormField(
@@ -127,10 +152,15 @@ class AddPatientPage extends StatelessWidget {
                           borderRadius: BorderRadius.circular(10.0))),
                   validator: (value) {
                     if (value!.isEmpty) {
-                      return "please enter a profession";
+                      return "Please enter a first name";
+                    }
+                    // Check if the value contains only alphabetic characters
+                    if (!RegExp(r'^[a-zA-Z]+$').hasMatch(value)) {
+                      return "Please enter a valid first name containing only alphabetic characters";
                     }
                     return null;
                   },
+
                 ),
                 const SizedBox(height: 16.0),
                 TextFormField(
