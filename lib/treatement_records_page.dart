@@ -1,31 +1,28 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:search/treatement.dart';
+import 'package:search/treatement.dart'; // Corrected import statement
 import 'package:search/treatmentlist.dart';
 import 'package:search/patient.dart';
 
 class TreatmentRecordsPage extends StatefulWidget {
   final Patient patient;
 
-  const TreatmentRecordsPage({super.key, required this.patient});
+
+  const TreatmentRecordsPage({Key? key, required this.patient}) : super(key: key);
 
   @override
   State<TreatmentRecordsPage> createState() => _TreatmentRecordsPageState();
 }
 
 class _TreatmentRecordsPageState extends State<TreatmentRecordsPage> {
- 
-  void updateList(String value) {
+  void updateList1(String value) {
     setState(() {
       display_list = treatment_list.where((treatment) =>
-      treatment.natureinterv
-          .toString()
+      treatment.natureinterv!
           .toLowerCase()
           .contains(value.toLowerCase()) ||
-          DateFormat('yyyy-MM-dd')
-              .format(treatment.datetreat!)
-              .contains(value.toLowerCase())).toList();
-      });
+          DateFormat('yyyy-MM-dd').format(treatment.datetreat!).contains(value.toLowerCase())).toList();
+    });
   }
 
   @override
@@ -38,24 +35,22 @@ class _TreatmentRecordsPageState extends State<TreatmentRecordsPage> {
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
-
-
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
-            children: [const Center(
-              child: Text(
-                "Search for a Patient ",
-                style: TextStyle(
-                  color: Color(0xff4682A9),
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
+            children: [
+              const Center(
+                child: Text(
+                  "Search for a Treatment",
+                  style: TextStyle(
+                    color: Color(0xff4682A9),
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
-            ),
-              const SizedBox(height: 10.00,),
+              const SizedBox(height: 10.0),
               TextField(
-
-                onChanged: (value) => updateList(value),
+                onChanged: (value) => updateList1(value),
                 decoration: InputDecoration(
                   filled: true,
                   fillColor: const Color(0xff91C8E4),
@@ -63,39 +58,23 @@ class _TreatmentRecordsPageState extends State<TreatmentRecordsPage> {
                     borderRadius: BorderRadius.circular(8.0),
                     borderSide: BorderSide.none,
                   ),
-                  hintText: "eg Youssef Ferjani",
+                  hintText: "eg Detartrage",
                   prefixIcon: const Icon(Icons.search),
                   prefixIconColor: Colors.white,
-                  suffixIcon: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      IconButton(
-                        onPressed: () {
-
-                          // Action to perform when the "Add Patient" button is pressed
-                          // For example, you can navigate to a new screen to add a patient
-                        },
-
-                        icon: const Icon(Icons.person_add),
-                        color: Colors.white,
-                      ),
-                    ],
-                  ),
                 ),
               ),
-
+              const SizedBox(height: 16.0),
               Text(
                 'Treatments for ${widget.patient.pname} ${widget.patient.plname}:',
-                style: const TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold,color: Color(0xff4682A9)),
+                style: const TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold, color: Color(0xff4682A9)),
               ),
-              const SizedBox(height: 16.0), // Add some space before treatments list
+              const SizedBox(height: 16.0),
               ListView.builder(
                 shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(), // Disable ListView scrolling
-                itemCount: treatment_list.length,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: display_list.length, // Use display_list instead of treatment_list
                 itemBuilder: (context, index) {
-                  final treatment = treatment_list[index];
+                  final treatment = display_list[index]; // Use display_list instead of treatment_list
                   return _buildTreatmentItem(treatment);
                 },
               ),

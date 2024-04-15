@@ -50,6 +50,7 @@ class _SearchPageState extends State<SearchPage> {
   //       ),
   //     );
   //   }
+
   void editPatientDetails(Patient patient) {
     Navigator.push(
       context,
@@ -71,6 +72,7 @@ class _SearchPageState extends State<SearchPage> {
       }
     });
   }
+
 
 
   @override
@@ -116,16 +118,26 @@ class _SearchPageState extends State<SearchPage> {
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
                     IconButton(
-                      onPressed: () {Navigator.push(
+                      onPressed: () {
+                        Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (context) => AddPatientPage()));
-                        // Action to perform when the "Add Patient" button is pressed
-                        // For example, you can navigate to a new screen to add a patient
+                          MaterialPageRoute(
+                            builder: (context) => AddPatientPage(
+                              onPatientAdded: (newPatient) {
+                                setState(() {
+                                  display_list.add(newPatient);
+                                });
+                                print('Patient added: $newPatient'); // Add this debug print statement
+                              },
+                            ),
+                          ),
+                        );
                       },
-
                       icon: const Icon(Icons.person_add),
                       color: Colors.white,
                     ),
+
+
                   ],
                 ),
               ),
@@ -183,7 +195,7 @@ class _SearchPageState extends State<SearchPage> {
                               ),
                               )],
                           ),
-                          SizedBox(width: 16.0),
+                          const SizedBox(width: 16.0),
                           Container(
                             margin: const EdgeInsets.only(top: 15.0,),
                             child: Text(
@@ -200,7 +212,7 @@ class _SearchPageState extends State<SearchPage> {
                               mainAxisAlignment: MainAxisAlignment.start,
                               children: [
                                 IconButton(
-                                  icon: Icon(Icons.edit),
+                                  icon: const Icon(Icons.edit),
                                   color: const Color(0xff4682A9),
                                   onPressed: () => editPatientDetails(display_list[index]),
                                 ),
@@ -227,7 +239,10 @@ class _SearchPageState extends State<SearchPage> {
                                         ),
                                         TextButton(
                                           onPressed: () {
-                                            // Add code to delete the patient
+                                            // Remove the patient from the list
+                                            setState(() {
+                                              display_list.removeAt(index); // Assuming 'index' is the index of the patient to delete
+                                            });
                                             // After deleting, close the dialog
                                             Navigator.of(context).pop();
                                           },
@@ -240,6 +255,7 @@ class _SearchPageState extends State<SearchPage> {
                               },
                               icon: const Icon(Icons.delete, color: Colors.red),
                             ),
+
                           )
                         ],
                       ),

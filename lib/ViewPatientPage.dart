@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:search/patient.dart';
 import 'package:search/treatement_records_page.dart';
-
+import 'package:search/treatement_chart.dart';
 class ViewPatientPage extends StatelessWidget {
   final Patient patient;
 
@@ -46,7 +46,10 @@ class ViewPatientPage extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 24.0),
                     ),
                     onPressed: () {
-                      // Handle viewing appointment history
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => treatementChart()),
+                      );
                     },
                     child: const Text(
                       'View Appointments',
