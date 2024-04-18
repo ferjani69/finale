@@ -1,36 +1,279 @@
-import'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg_provider/flutter_svg_provider.dart';
 import 'package:path_drawing/path_drawing.dart';
+import 'package:search/patient.dart';
+import 'package:search/treatement_records_page.dart';
+import 'package:search/treatmentlist.dart';
+import 'OCR0ptionsPage.dart';
+import 'treatement.dart';
 import 'package:xml/xml.dart';
-class treatementChart extends StatefulWidget {
-  const treatementChart({super.key});
+import 'Drawerwidget.dart'; // Import the AppDrawer widget
+
+ 
+
+String dent='';
+
+class TreatmentChart extends StatefulWidget {
+  final Function(treatement) addtreat; // Define the callback function
+  final Patient patient;
+  const TreatmentChart({super.key, required this.addtreat, required this.patient});
 
   @override
-  State<treatementChart> createState() => _treatementChartState();
+  State<TreatmentChart> createState() => _TreatmentChartState();
 }
 
-class _treatementChartState extends State<treatementChart> {
+
+class _TreatmentChartState extends State<TreatmentChart> {
+
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  final TextEditingController dateController = TextEditingController();
+  final TextEditingController natureIntervController = TextEditingController();
+  final TextEditingController notesController = TextEditingController();
+  final TextEditingController doitController = TextEditingController();
+  final TextEditingController recuController = TextEditingController();
+
+  void _showdatepicker() async{
+    final DateTime? selectedDate= await
+    showDatePicker(context: context,
+        initialDate: DateTime.now(),
+        firstDate: DateTime(2000),
+        lastDate: DateTime(2080),
+    );
+    if (selectedDate!=null){
+      setState(() {
+        final formattedDate= '${selectedDate.year}-${selectedDate.month.toString().padLeft(2, '0')}-${selectedDate.day.toString().padLeft(2, '0')}';
+        dateController.text=formattedDate;
+      });
+    }
+  }
+  void _submitForm() {
+    if (_formKey.currentState!.validate()) {
+      // Process form data here
+      print('Form submitted');
+      String notes = notesController.text;
+      String natureintv = natureIntervController.text;
+      String doit = doitController.text;
+      String recu = recuController.text;
+      String tretdate = dateController.text;
+      treatement newtret = treatement(
+        "unique_id",
+        DateTime.parse(tretdate),
+        dent,
+        natureintv,
+        notes,
+        int.parse(doit),
+        int.parse(recu),
+      );
+
+      // Clear text fields
+      dateController.clear();
+      natureIntervController.clear();
+      notesController.clear();
+      doitController.clear();
+      recuController.clear();
+
+      // Show snackbar
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Treatments added successfully'),
+        ),
+      );
+
+      widget.addtreat(newtret);
+
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => TreatmentRecordsPage(
+            patient: widget.patient, // Replace patientObject with your patient data
+            addtreat: (newTreatment) {
+              setState(() {
+                display_list.add(newTreatment);
+              });
+            },
+          ),
+        ),
+      );
+    } else {
+      // Show snackbar for invalid input
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please check your inputs'),
+        ),
+      );
+    }
+  }
   @override
   Widget build(BuildContext context) {
-    return const Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Image(
-          width: 16,
-          height: 1,
-          image: Svg('assets/teeth.svg'),
-        ),
-        SizedBox(height: 20), // Adjust the spacing between the Image and Foo widget as needed
-        Foo(
-          asset: 'assets/teeth.svg',
-          idToString: adultIdToString,
-        ),
-      ],
-    );
-  }
+    return Scaffold(
+        appBar: AppBar(
+          title: const Text('Treatment Chart'),
+          actions: [
+            IconButton(
+              padding: const EdgeInsets.only(right: 30.0), // Adjust the padding as needed for spacing
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => OCROptionsPage()),
+                );
+              },
+              icon: const Icon(Icons.camera_alt ),iconSize: 30,
 
+            ),
+          ],
+        ),
+        drawer: const Drawerw(), // Use the AppDrawer widget here
+
+        body: SingleChildScrollView(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  const Image(
+                    width: 5,
+                    height: 1,
+                    image: Svg('assets/teeth.svg'),
+                  ),
+                  const SizedBox(height: 20),
+                  const Foo(
+                    asset: 'assets/teeth.svg',
+                    idToString: adultIdToString,
+                  ),
+                  Material(
+                    child: TextFormField(
+                      autovalidateMode: AutovalidateMode.onUserInteraction,
+                      onTap: _showdatepicker,
+                      controller: dateController,
+                      decoration:  InputDecoration(
+                        labelText: 'Treatment Date (YYYY-MM-DD)',
+                          border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10.0))
+                      ),
+                      validator: (value) {
+                        if (value!.isEmpty) {
+                          return 'Please enter a Date';
+                        }
+                        // You can add more validation if needed
+                        return null;
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Material(
+                    child: TextFormField(
+                      autovalidateMode: AutovalidateMode.onUserInteraction,
+                      controller: natureIntervController,
+                      decoration:  InputDecoration(
+                        labelText: 'Nature of Intervention',
+                          border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10.0))),
+                      validator: (value) {
+                        if (value!.isEmpty) {
+                          return 'Please enter nature of intervention';
+                        }
+                        if (value.startsWith(' ')) { // Check if the value starts with a space
+                          return 'Nature of intervention cannot start with a space';
+                        }
+                        if (!RegExp(r'^[a-zA-Z0-9\s]+$').hasMatch(value)) {
+                          return 'Please enter valid nature of intervention';
+                        }
+                        // You can add more validation if needed
+                        return null;
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Material(
+                    child: TextFormField(
+                      autovalidateMode: AutovalidateMode.onUserInteraction,
+                      controller: notesController,
+                      decoration:  InputDecoration(
+                          labelText: 'Note',
+                          border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10.0))),
+                      validator: (value) {
+                        if (value!.isEmpty) {
+                          return 'Please enter a Note';
+                        }
+                        if (value.startsWith(' ')) { // Check if the value starts with a space
+                          return 'Note cannot start with a space';
+                        }
+                        if (!RegExp(r'^[a-zA-Z0-9\s]+$').hasMatch(value)) {
+                          return 'Please enter valid Note';
+                        }
+                        // You can add more validation if needed
+                        return null;
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Material(
+                    child: TextFormField(
+                      autovalidateMode: AutovalidateMode.onUserInteraction,
+                      controller: doitController,
+                      keyboardType: TextInputType.number,
+                      inputFormatters:<TextInputFormatter> [
+                        FilteringTextInputFormatter.digitsOnly
+                      ],
+                      decoration:  InputDecoration(
+                        labelText: 'Charge',
+                          border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10.0))),
+                      validator: (value) {
+                        if (value!.isEmpty) {
+                          return 'Please enter Your Charge amount';
+                        }
+                        // You can add more validation if needed
+                        return null;
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Material(
+                    child: TextFormField(
+                      controller: recuController,
+                      keyboardType: TextInputType.number,
+                      inputFormatters:<TextInputFormatter> [
+                        FilteringTextInputFormatter.digitsOnly
+                      ],
+                      decoration: InputDecoration(
+                        labelText: 'Payment',
+                          border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10.0))),
+                      validator: (value) {
+                        if (value!.isEmpty) {
+                          return 'Please enter Your Payment amount';
+                        }
+                        // You can add more validation if needed
+                        return null;
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  ElevatedButton(
+                    onPressed: _submitForm,
+                    child: const Text('Submit'),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 20),
+
+          // Add spacing between widgets as needed
+        ],
+      ),
+    ));
+  }
 }
+
 typedef Data = ({Size size, Map<int, Tooth> teeth});
 
 class Foo extends StatefulWidget {
@@ -62,67 +305,74 @@ class _FooState extends State<Foo> {
     if (data.size == Size.zero) return const UnconstrainedBox();
 
     return Card(
-      child: FittedBox(
-        child: SizedBox.fromSize(
-          size: data.size,
-          child: Stack(
-            children: [
-              // teeth
-              for (final MapEntry(key: key, value: tooth) in data.teeth.entries)
-                Positioned.fromRect(
-                  rect: tooth.rect,
-                  child: Tooltip(
-                    message: 'tooth\n${widget.idToString(key)}',
-                    textAlign: TextAlign.center,
-                    preferBelow: false,
-                    decoration: const BoxDecoration(
-                      color: Colors.black87,
-                      border: Border.symmetric(
-                          horizontal: BorderSide(color: Colors.white54)
+      child: FractionallySizedBox( // Wrap with FractionallySizedBox
+        widthFactor: 0.7, // Adjust the width factor as needed
+        child: FittedBox(
+          child: SizedBox.fromSize(
+            size: data.size,
+            child: Stack(
+              children: [
+                // teeth
+                for (final MapEntry<int, Tooth> entry in data.teeth.entries)
+                  Positioned.fromRect(
+                    rect: entry.value.rect,
+                    child: Tooltip(
+                      message: '${widget.idToString(entry.key)}', // Pass the tooth name directly here
+                      textAlign: TextAlign.center,
+                      preferBelow: false,
+                      decoration: const BoxDecoration(
+                        color: Colors.black87,
+                        border: Border.symmetric(
+                          horizontal: BorderSide(color: Colors.white54),
+                        ),
                       ),
-                    ),
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 750),
-                      clipBehavior: Clip.antiAlias,
-                      decoration: ShapeDecoration(
-                        color: tooth.selected? Colors.teal.shade400 : Colors.white,
-                        shadows: tooth.selected? [const BoxShadow(blurRadius: 4, offset: Offset(0, 6))] : null,
-                        shape: ToothBorder(tooth.path),
-                      ),
-                      child: Material(
-                        type: MaterialType.transparency,
-                        child: InkWell(
-                          splashColor: tooth.selected? Colors.white : Colors.teal.shade400,
-                          highlightColor: Colors.transparent,
-                          onTap: () {
-                            print('tooth ${widget.idToString(key)} pressed (id $key)');
-                            setState(() => tooth.selected = !tooth.selected);
-                          },
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 750),
+                        clipBehavior: Clip.antiAlias,
+                        decoration: ShapeDecoration(
+                          color: entry.value.selected ? Colors.teal.shade400 : Colors.white,
+                          shadows: entry.value.selected
+                              ? [const BoxShadow(blurRadius: 4, offset: Offset(0, 6))]
+                              : null,
+                          shape: ToothBorder(entry.value.path),
+                        ),
+                        child: Material(
+                          type: MaterialType.transparency,
+                          child: InkWell(
+                            splashColor:
+                            entry.value.selected ? Colors.white : Colors.teal.shade400,
+                            highlightColor: Colors.transparent,
+                            onTap: () {
+                              setState(() {
+                                entry.value.selected = !entry.value.selected;
+                                dent = entry.key.toString();
+                              });
+                            },
+                          ),
                         ),
                       ),
                     ),
                   ),
-                ),
-              // selected teeth list
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 125, vertical: 150),
-                child: Center(
-                  child: Builder(
+                // selected teeth list
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 125, vertical: 150),
+                  child: Center(
+                    child: Builder(
                       builder: (context) {
                         final selected = data.teeth.entries
                             .where((e) => e.value.selected)
                             .map((e) => Text(widget.idToString(e.key)))
                             .toList();
                         return DefaultTextStyle(
-                          style: Theme.of(context).textTheme.headlineMedium!,
+                          style: Theme.of(context).textTheme.titleLarge!,
                           textAlign: TextAlign.center,
                           child: AnimatedOpacity(
                             duration: const Duration(milliseconds: 500),
-                            opacity: selected.isNotEmpty? 1 : 0,
+                            opacity: selected.isNotEmpty ? 1 : 0,
                             child: DecoratedBox(
                               decoration: const BoxDecoration(
                                 border: Border.symmetric(
-                                    horizontal: BorderSide(width: 3, color: Colors.black26)
+                                  horizontal: BorderSide(width: 3, color: Colors.black26),
                                 ),
                               ),
                               child: ListView(
@@ -132,16 +382,18 @@ class _FooState extends State<Foo> {
                             ),
                           ),
                         );
-                      }
+                      },
+                    ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
     );
   }
+
 
   Future<Data> loadTeeth(String asset) async {
     final xml = await rootBundle.loadString(asset);
@@ -152,7 +404,6 @@ class _FooState extends State<Foo> {
     final h = double.parse(viewBox[3]);
 
     final teeth = doc.rootElement.findAllElements('path');
-    print('loaded ${teeth.length} paths');
     return (
     size: Size(w, h),
     teeth: <int, Tooth>{
@@ -175,19 +426,21 @@ class Tooth {
 }
 
 class ToothBorder extends ShapeBorder {
-  const ToothBorder(this.path);
-
   final Path path;
+
+  const ToothBorder(this.path);
 
   @override
   EdgeInsetsGeometry get dimensions => EdgeInsets.zero;
 
   @override
-  Path getInnerPath(Rect rect, {TextDirection? textDirection}) => getOuterPath(rect);
+  Path getInnerPath(Rect rect, {TextDirection? textDirection}) {
+    return path.shift(rect.topLeft);
+  }
 
   @override
   Path getOuterPath(Rect rect, {TextDirection? textDirection}) {
-    return rect.topLeft == Offset.zero? path : path.shift(rect.topLeft);
+    return path.shift(rect.topLeft);
   }
 
   @override
@@ -196,23 +449,32 @@ class ToothBorder extends ShapeBorder {
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2
       ..color = Colors.black54;
-    canvas.drawPath(getOuterPath(rect), paint);
+    canvas.drawPath(path.shift(rect.topLeft), paint);
   }
 
   @override
   ShapeBorder scale(double t) => this;
 }
 
+
+
 String adultIdToString(int id) {
+  if (id < 0 || id > 36) {
+    return ''; // Return empty string for teeth outside the range 1-36
+  }
+  final number = id ;
+  return 'Tooth #$number';
+}
+/*String adultIdToString(int id) {
   final (up, left, number) = switch (id) {
     < 8 => (true, false, 8 - id),
     < 16 => (true, true, id - 8 + 1),
     < 24 => (false, true, 24 - id),
     _ => (false, false, id - 24 + 1),
   };
-  return '${up? 'up' : 'down'} ${left? 'left' : 'right'} #$number';
+  return '${up ? 'up' : 'down'} ${left ? 'left' : 'right'} #$number';
 }
-
+*/
 String childIdToString(int id) {
   final (up, left, number) = switch (id) {
     < 6 => (true, false, 6 - id),
@@ -220,5 +482,5 @@ String childIdToString(int id) {
     < 18 => (false, true, 18 - id),
     _ => (false, false, id - 18 + 1),
   };
-  return '${up? 'up' : 'down'} ${left? 'left' : 'right'} #$number';
+  return '${up ? 'up' : 'down'} ${left ? 'left' : 'right'} #$number';
 }

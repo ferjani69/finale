@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:search/patient.dart';
 import 'package:search/treatement_records_page.dart';
-import 'package:search/treatement_chart.dart';
+import 'Drawerwidget.dart';
 class ViewPatientPage extends StatelessWidget {
   final Patient patient;
 
@@ -15,6 +15,7 @@ class ViewPatientPage extends StatelessWidget {
         title: const Text('Patient Details'),
         backgroundColor: const Color(0xff91C8E4),
       ),
+
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
@@ -32,7 +33,7 @@ class ViewPatientPage extends StatelessWidget {
                     onPressed: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => TreatmentRecordsPage(patient: patient)),
+                        MaterialPageRoute(builder: (context) => TreatmentRecordsPage(patient: patient, addtreat: (treatement ) {  },)),
                       );
                     },
                     child: const Text(
@@ -46,10 +47,7 @@ class ViewPatientPage extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 24.0),
                     ),
                     onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => treatementChart()),
-                      );
+
                     },
                     child: const Text(
                       'View Appointments',

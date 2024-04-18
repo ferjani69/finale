@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:search/treatement.dart'; // Corrected import statement
+import 'package:search/treatement_chart.dart';
 import 'package:search/treatmentlist.dart';
 import 'package:search/patient.dart';
+import 'Drawerwidget.dart'; // Import the AppDrawer widget
 
 class TreatmentRecordsPage extends StatefulWidget {
   final Patient patient;
+  final Function(treatement) addtreat;
 
+  const TreatmentRecordsPage({Key? key, required this.patient, required this.addtreat}) : super(key: key);
 
-  const TreatmentRecordsPage({Key? key, required this.patient}) : super(key: key);
 
   @override
   State<TreatmentRecordsPage> createState() => _TreatmentRecordsPageState();
@@ -24,7 +27,6 @@ class _TreatmentRecordsPageState extends State<TreatmentRecordsPage> {
           DateFormat('yyyy-MM-dd').format(treatment.datetreat!).contains(value.toLowerCase())).toList();
     });
   }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -32,6 +34,7 @@ class _TreatmentRecordsPageState extends State<TreatmentRecordsPage> {
         title: Text('Treatment Records - ${widget.patient.pname} ${widget.patient.plname}'),
         backgroundColor: const Color(0xff91C8E4),
       ),
+
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
@@ -61,6 +64,35 @@ class _TreatmentRecordsPageState extends State<TreatmentRecordsPage> {
                   hintText: "eg Detartrage",
                   prefixIcon: const Icon(Icons.search),
                   prefixIconColor: Colors.white,
+                  suffixIcon: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      IconButton(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => TreatmentChart(
+                                patient:widget.patient,
+                                addtreat: (newTreatment) {
+
+                                  setState(() {
+                                    display_list.add(newTreatment);
+                                  });
+                                },
+                              ),
+                            ),
+                          );
+                        },
+                        icon: const Icon(Icons.add_box_rounded),
+                        color: Colors.white,
+                        iconSize: 30,
+                      ),
+
+
+                    ],
+                  ),
                 ),
               ),
               const SizedBox(height: 16.0),

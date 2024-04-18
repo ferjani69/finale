@@ -1,16 +1,17 @@
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:search/OCR0ptionsPage.dart';
+import 'package:search/main.dart';
 import 'package:search/patient.dart';
 import 'package:intl/intl.dart';
+import 'package:search/ptientsList.dart';
+import 'Drawerwidget.dart'; // Import the AppDrawer widget
 
 
-import 'ptientsList.dart';
 class AddPatientPage extends StatefulWidget {
 
-  final Function(Patient) onPatientAdded; // Define the callback function
+  final Function(Patient) patientadd; // Define the callback function
 
-  AddPatientPage({required this.onPatientAdded});
+  AddPatientPage({required this.patientadd});
 
   @override
   State<AddPatientPage> createState() => _AddPatientPageState();
@@ -33,6 +34,20 @@ class _AddPatientPageState extends State<AddPatientPage> {
 
   final TextEditingController referenceController = TextEditingController();
 
+  void _showdatepicker() async{
+    final DateTime? selectedDate= await
+    showDatePicker(context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2080),
+    );
+    if (selectedDate!=null){
+      setState(() {
+        final formattedDate= '${selectedDate.year}-${selectedDate.month.toString().padLeft(2, '0')}-${selectedDate.day.toString().padLeft(2, '0')}';
+        birthDateController.text=formattedDate;
+      });
+    }
+  }
   void _submitForm() {
     if (_formkey.currentState!.validate()) {
       // Retrieve values from controllers
@@ -64,15 +79,39 @@ class _AddPatientPageState extends State<AddPatientPage> {
         profession,
         reference,
       );
-
-
+      firstNameController.clear();
+      lastNameController.clear();
+      addressController.clear();
+      professionController.clear();
+      referenceController.clear();
+      phoneNumberController.clear();
+      birthDateController.clear();
       // Add the new patient to the patient_list
-      widget.onPatientAdded(newPatient);
-      ScaffoldMessenger.of(_formkey.currentContext!).showSnackBar(
-        const SnackBar(content: Text("Patient added successfully")),
+      widget.patientadd(newPatient);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Patient added successfully'),
+        ),
       );
-
-      // Clear form fields after submission (if needed)
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => SearchPage(
+            patientadd: (newPatient) {
+              setState(() {
+                display_list.add(newPatient);
+              });
+            },
+          ),
+        ),
+      );
+    }else {
+      // Show snackbar for invalid input
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please check your inputs'),
+        ),
+      );
     }
   }
 
@@ -167,6 +206,8 @@ class _AddPatientPageState extends State<AddPatientPage> {
                 const SizedBox(height: 16.0),
                 TextFormField(
                   autovalidateMode: AutovalidateMode.onUserInteraction,
+                  keyboardType: TextInputType.phone,
+
                   controller: phoneNumberController,
                   decoration: InputDecoration(
                       labelText: 'Phone Number',
@@ -176,6 +217,7 @@ class _AddPatientPageState extends State<AddPatientPage> {
                 ),
                 const SizedBox(height: 16.0),
                 TextFormField(
+                  onTap: _showdatepicker,
                   autovalidateMode: AutovalidateMode.onUserInteraction,
                   controller: birthDateController,
                   decoration: InputDecoration(
@@ -194,7 +236,7 @@ class _AddPatientPageState extends State<AddPatientPage> {
                     }
                     // Convert the string date into a DateTime object
                     try {
-                      DateTime parsedDate = DateTime.parse(value);
+                      DateTime.parse(value);
                       return null; // Return null if the date is valid
                     } catch (e) {
                       return "Please enter a valid date in the format YYYY-MM-DD";

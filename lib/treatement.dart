@@ -1,8 +1,15 @@
 class treatement {
   String? _id;
   DateTime? _datetreat;
-  int? _dent;
+  String? _dent;
   String? _natureinterv;
+  String?_notes;
+
+  String? get notes => _notes;
+
+  set notes(String? value) {
+    _notes = value;
+  }
 
   String? get id => _id;
 
@@ -13,7 +20,7 @@ class treatement {
   int? _doit;
   int? _recu;
 
-  treatement(this._id,this._datetreat, this._dent, this._natureinterv, this._doit, this._recu,);
+  treatement(this._id,this._datetreat, this._dent, this._natureinterv,this._notes, this._doit, this._recu,);
 
   DateTime? get datetreat => _datetreat;
 
@@ -21,9 +28,9 @@ class treatement {
     _datetreat = value;
   }
 
-  int? get dent => _dent;
+  String? get dent => _dent;
 
-  set dent(int? value) {
+  set dent(String? value) {
     _dent = value;
   }
 

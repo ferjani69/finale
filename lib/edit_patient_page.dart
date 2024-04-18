@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:search/patient.dart';
 import 'package:intl/intl.dart';
+import 'Drawerwidget.dart'; // Import the AppDrawer widget
 
 
 class EditPatientPage extends StatefulWidget {
@@ -21,9 +22,11 @@ class _EditPatientPageState extends State<EditPatientPage> {
     return Scaffold(
       backgroundColor: const Color(0xffECF9FF),
       appBar: AppBar(
+
         backgroundColor: const Color(0xff91C8E4),
         title: const Text('Edit Patient'),
       ),
+
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: SingleChildScrollView( // Wrap the Column with SingleChildScrollView
