@@ -5,6 +5,9 @@ import 'package:search/patient.dart';
 import 'package:intl/intl.dart';
 import 'package:search/ptientsList.dart';
 import 'Drawerwidget.dart'; // Import the AppDrawer widget
+import 'Voicett.dart';
+import 'package:speech_to_text/speech_to_text.dart';
+
 
 
 class AddPatientPage extends StatefulWidget {
@@ -18,6 +21,9 @@ class AddPatientPage extends StatefulWidget {
 }
 
 class _AddPatientPageState extends State<AddPatientPage> {
+  final SpeechToText _speechToText=SpeechToText();
+  bool _speechEnabled=false;
+  String _wordSpokken="";
   final GlobalKey<FormState> _formkey = GlobalKey<FormState>();
 
   final TextEditingController firstNameController = TextEditingController();
@@ -47,6 +53,27 @@ class _AddPatientPageState extends State<AddPatientPage> {
         birthDateController.text=formattedDate;
       });
     }
+  }
+  void initState(){
+    super.initState();
+    initSpeech();
+  }
+  void initSpeech() async{
+    _speechEnabled= await _speechToText.initialize();
+    setState(() {});
+  }
+  void _setRecognizedWords(TextEditingController controller, String words) {
+    setState(() {
+      controller.text = words;
+    });
+  }
+  void _startListening()async{
+    await _speechToText.listen(onResult:_onSpeechResult);
+  }
+  void _onSpeechResult(result) {
+    setState(() {
+      _wordSpokken="${result.recognizedWords}";
+    });
   }
   void _submitForm() {
     if (_formkey.currentState!.validate()) {
@@ -153,6 +180,7 @@ class _AddPatientPageState extends State<AddPatientPage> {
           ),
         ],
       ),
+      drawer: const Drawerw(), // Use the AppDrawer widget here
 
 
       body:
@@ -163,26 +191,41 @@ class _AddPatientPageState extends State<AddPatientPage> {
             key: _formkey,
             child: Column(
               children: [
-                TextFormField(
-                  autovalidateMode: AutovalidateMode.onUserInteraction,
-                  controller: firstNameController,
-                  decoration: InputDecoration(
-                      labelText: 'First name',
-                      border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10.0))),
-                  validator: (value) {
-                    if (value!.isEmpty) {
-                      return "Please enter a first name";
-                    }
-                    // Check if the value contains only alphabetic characters, and optionally spaces
-                    if (!RegExp(r'^[a-zA-Z]+(?:\s[a-zA-Z]+)*$').hasMatch(value)) {
-                      return "Please enter a valid first name containing only alphabetic characters, and optionally separated by spaces";
-                    }
-                    return null;
-                  },
+
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextFormField(
+                            autovalidateMode: AutovalidateMode.onUserInteraction,
+                            controller: firstNameController,
+                            decoration: InputDecoration(
+                              labelText: 'First name',
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10.0),
+                              ),
+                            ),
+                            validator: (value) {
+                              // Your validation logic here
+                            },
+
+                          ),
+
+                        ),
+                        IconButton(
+                          icon: Icon(Icons.mic),
+                          onPressed: () {
+                            _startListening(); // Start speech recognition
+                            // Once speech is recognized, update the text field
+                            _setRecognizedWords(firstNameController, _wordSpokken);
+                          },
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16.0),
+                    // Other TextFormField widgets...
 
 
-                ),
+
                 const SizedBox(height: 16.0),
                 TextFormField(
                   autovalidateMode: AutovalidateMode.onUserInteraction,
