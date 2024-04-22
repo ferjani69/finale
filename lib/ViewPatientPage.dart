@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:search/patient.dart';
+import 'package:search/Patients%20class/patient.dart';
 import 'package:search/treatement_records_page.dart';
-import 'Drawerwidget.dart';
+import 'Widgets/Drawerwidget.dart';
 class ViewPatientPage extends StatelessWidget {
   final Patient patient;
 

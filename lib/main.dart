@@ -2,12 +2,12 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:search/AddPatientPage.dart';
-import 'package:search/Drawerwidget.dart';
-import 'package:search/patient.dart';
+import 'package:search/Widgets/Drawerwidget.dart';
+import 'package:search/Patients%20class/patient.dart';
 import 'package:search/edit_patient_page.dart';
-import 'ptientsList.dart';
+import 'Patients class/ptientsList.dart';
 import 'package:search/ViewPatientPage.dart';
-import 'Drawerwidget.dart'; // Import the AppDrawer widget
+import 'Widgets/Drawerwidget.dart'; // Import the AppDrawer widget
 
 void main() {
   runApp(const MyApp());

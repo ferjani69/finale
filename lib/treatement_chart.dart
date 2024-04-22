@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg_provider/flutter_svg_provider.dart';
 import 'package:path_drawing/path_drawing.dart';
-import 'package:search/patient.dart';
+import 'package:search/Patients%20class/patient.dart';
 import 'package:search/treatement_records_page.dart';
 import 'package:search/treatmentlist.dart';
 import 'OCR0ptionsPage.dart';
 import 'treatement.dart';
 import 'package:xml/xml.dart';
-import 'Drawerwidget.dart'; // Import the AppDrawer widget
+import 'Widgets/Drawerwidget.dart'; // Import the AppDrawer widget
 
  
 

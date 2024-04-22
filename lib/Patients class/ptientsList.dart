@@ -1,4 +1,4 @@
-import "package:search/patient.dart";
+import "package:search/Patients%20class/patient.dart";
 
 
 

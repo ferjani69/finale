@@ -1,30 +1,68 @@
+
 import 'package:flutter/material.dart';
-import 'package:search/Patients%20class/patient.dart';
+import 'package:search/treatement.dart';
+import 'treatmentlist.dart';
 import 'package:intl/intl.dart';
-import 'Widgets/Drawerwidget.dart'; // Import the AppDrawer widget
 
 
-class EditPatientPage extends StatefulWidget {
-  final Patient patient;
-  final Function(Patient) onUpdate;
+class edittreatment extends StatefulWidget {
+  final treatement treatement1;
+  final Function(treatement) onUpdate;
 
-  const EditPatientPage({super.key, required this.patient, required this.onUpdate});
+  const edittreatment({super.key, required this.treatement1, required this.onUpdate});
+
 
   @override
-  _EditPatientPageState createState() => _EditPatientPageState();
+  State<edittreatment> createState() => _edittreatmentState();
 }
+late TextEditingController dateController;
 
-class _EditPatientPageState extends State<EditPatientPage> {
+String date='';
+class _edittreatmentState extends State<edittreatment> {
+  @override
+  void initState() {
+    super.initState();
+    // Initialize the date controller with formatted date or empty if null
+    dateController = TextEditingController(
+        text: widget.treatement1.datetreat != null
+            ? DateFormat('yyyy-MM-dd').format(widget.treatement1.datetreat!)
+            : ''
+    );
+  }
+
+  @override
+  void dispose() {
+    dateController.dispose();
+    super.dispose();
+  }
+
+  void _showDatePicker() async {
+    final DateTime? selectedDate = await showDatePicker(
+      context: context,
+      initialDate: DateFormat('yyyy-MM-dd').parse(dateController.text),
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2080),
+    );
+    if (selectedDate != null) {
+      setState(() {
+        // Update the date controller with the new date
+        dateController.text = DateFormat('yyyy-MM-dd').format(selectedDate);
+        // Update the treatment object if needed
+        widget.treatement1.datetreat = selectedDate;
+      });
+    }
+  }
   final _formKey = GlobalKey<FormState>();
 
   @override
+
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xffECF9FF),
       appBar: AppBar(
 
         backgroundColor: const Color(0xff91C8E4),
-        title: const Text('Edit Patient'),
+        title: const Text('Edit Treatement'),
       ),
 
       body: Padding(
@@ -36,110 +74,97 @@ class _EditPatientPageState extends State<EditPatientPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 TextFormField(
-                  initialValue: widget.patient.pname,
+                  initialValue: widget.treatement1.dent,
                   decoration: InputDecoration(
-                      labelText: 'First name',
+                      labelText: 'Tooth',
                       border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(10.0))),
                   onChanged: (value) {
                     setState(() {
-                      widget.patient.pname = value;
+                      widget.treatement1.dent = value;
                     });
                   },
                 ),
                 const SizedBox(height: 16.0),
                 TextFormField(
-                  initialValue: widget.patient.plname,
                   decoration: InputDecoration(
-                      labelText: 'Last Name',
+
+                      labelText: 'Treatement Date',
                       border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(10.0))),
-                  onChanged: (value) {
-                    setState(() {
-                      widget.patient.plname = value;
-                    });
+                  controller: dateController,
+                  onTap: _showDatePicker,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter a date';
+                    }
+                    // Additional validation can be performed here
+                    return null;
                   },
                 ),
+
+
                 const SizedBox(height: 16.0),
                 TextFormField(
-                  initialValue: widget.patient.telnum.toString(),
+                  initialValue: widget.treatement1.natureinterv.toString(),
                   keyboardType: TextInputType.phone,
                   decoration: InputDecoration(
-                      labelText: 'Phone Number',
+                      labelText: 'Nature Intervention',
                       border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(10.0))),
                   onChanged: (value) {
                     setState(() {
-                      widget.patient.telnum = int.tryParse(value);
+                      widget.treatement1.natureinterv = value;
+                    });
+                  },
+                ),
+                const SizedBox(height: 16.0),
+
+                TextFormField(
+                  initialValue: widget.treatement1.notes,
+                  decoration: InputDecoration(
+                      labelText: 'Notes',
+                      border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10.0))),
+                  onChanged: (value) {
+                    setState(() {
+                      widget.treatement1.notes = value;
                     });
                   },
                 ),
                 const SizedBox(height: 16.0),
                 TextFormField(
-                  initialValue: widget.patient.daten != null
-                      ? DateFormat('yyyy-MM-dd').format(widget.patient.daten!)
-                      : null,
+                  initialValue: widget.treatement1.doit.toString(),
                   decoration: InputDecoration(
-                      labelText: 'Date of Birth',
+                      labelText: 'Charge',
                       border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(10.0))),
                   onChanged: (value) {
                     setState(() {
-                      if (value.isNotEmpty) {
-                        widget.patient.daten = DateTime.parse(value);
-                      } else {
-                        // Handle empty input if needed
-                      }
+                      widget.treatement1.doit = int.tryParse(value);
                     });
                   },
                 ),
                 const SizedBox(height: 16.0),
                 TextFormField(
-                  initialValue: widget.patient.adress,
+                  initialValue: widget.treatement1.recu.toString(),
                   decoration: InputDecoration(
-                      labelText: 'Address',
+                      labelText: 'Payment',
                       border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(10.0))),
                   onChanged: (value) {
                     setState(() {
-                      widget.patient.adress = value;
-                    });
-                  },
-                ),
-                const SizedBox(height: 16.0),
-                TextFormField(
-                  initialValue: widget.patient.proff,
-                  decoration: InputDecoration(
-                      labelText: 'Profession',
-                      border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10.0))),
-                  onChanged: (value) {
-                    setState(() {
-                      widget.patient.proff = value;
-                    });
-                  },
-                ),
-                const SizedBox(height: 16.0),
-                TextFormField(
-                  initialValue: widget.patient.ref,
-                  decoration: InputDecoration(
-                      labelText: 'Reference',
-                      border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10.0))),
-                  onChanged: (value) {
-                    setState(() {
-                      widget.patient.ref = value;
+                      widget.treatement1.recu =int.tryParse(value);
                     });
                   },
                 ),
                 const SizedBox(height: 16.0),
                 Center(
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xff91C8E4)),
+                  child:  ElevatedButton(
+                    style: ElevatedButton.styleFrom(backgroundColor: const Color(0xff91C8E4)),
                     onPressed: () {
                       if (_formKey.currentState!.validate()) {
-                        widget.onUpdate(widget.patient);
+                        widget.onUpdate(widget.treatement1);
                         Navigator.pop(context);
                       }
                     },
@@ -154,3 +179,4 @@ class _EditPatientPageState extends State<EditPatientPage> {
     );
   }
 }
+

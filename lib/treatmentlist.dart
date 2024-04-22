@@ -1,4 +1,4 @@
-import 'package:search/patient.dart';
+import 'package:search/Patients%20class/patient.dart';
 import 'package:search/treatement.dart';
 import 'package:intl/intl.dart';
 final List<treatement> treatment_list = [
