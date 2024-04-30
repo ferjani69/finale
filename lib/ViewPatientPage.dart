@@ -3,6 +3,9 @@ import 'package:intl/intl.dart';
 import 'package:search/Patients%20class/patient.dart';
 import 'package:search/treatement_records_page.dart';
 import 'Widgets/Drawerwidget.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_core/firebase_core.dart' ;
+import 'package:get/get.dart';
 class ViewPatientPage extends StatelessWidget {
   final Patient patient;
 

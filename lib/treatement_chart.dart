@@ -9,8 +9,10 @@ import 'OCR0ptionsPage.dart';
 import 'treatement.dart';
 import 'package:xml/xml.dart';
 import 'Widgets/Drawerwidget.dart'; // Import the AppDrawer widget
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_core/firebase_core.dart' ;
+import 'package:get/get.dart';
 
- 
 
 String dent='';
 
@@ -48,6 +50,8 @@ class _TreatmentChartState extends State<TreatmentChart> {
     }
   }
   void _submitForm() {
+    String formattedDate='' ;
+
     if (_formKey.currentState!.validate()) {
       // Process form data here
       print('Form submitted');
@@ -64,7 +68,23 @@ class _TreatmentChartState extends State<TreatmentChart> {
         notes,
         int.parse(doit),
         int.parse(recu),
-      );
+      );   CollectionReference Treatements = FirebaseFirestore.instance.collection("Treatements");
+      Treatements.add({
+
+        'treatDate':DateTime.parse(tretdate),
+        'dent': int.parse(dent),
+        'Natureintrv': natureintv,
+        'Notes':notes, // Firestore will handle DateTime correctly
+        'doit': int.parse(doit),
+        'recu': int.parse(recu),
+      }).then((docRef) {
+        print("Document written with ID: ${docRef.id}");
+        // Update the ID of newPatient if necessary
+        newtret.id = docRef.id;
+        widget.addtreat(newtret);
+      }).catchError((error) {
+        print("Error adding document: $error");
+      });
 
       // Clear text fields
       dateController.clear();

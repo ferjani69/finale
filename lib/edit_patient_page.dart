@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:search/Patients%20class/patient.dart';
 import 'package:intl/intl.dart';
 import 'Widgets/Drawerwidget.dart'; // Import the AppDrawer widget
-
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_core/firebase_core.dart' ;
+import 'package:get/get.dart';
 
 class EditPatientPage extends StatefulWidget {
   final Patient patient;
@@ -16,6 +18,30 @@ class EditPatientPage extends StatefulWidget {
 
 class _EditPatientPageState extends State<EditPatientPage> {
   final _formKey = GlobalKey<FormState>();
+  void updatePatientInFirestore() {
+    if (widget.patient.id == null) {
+      // Handle error: patient ID should not be null
+      print("Error: No patient ID available for updating.");
+      return;
+    }
+
+    FirebaseFirestore.instance.collection('Patients').doc(widget.patient.id).update({
+      'firstname': widget.patient.pname,
+      'lastname': widget.patient.plname,
+      'phonenumber': widget.patient.telnum,
+      'dateofBirth': widget.patient.daten != null ? DateFormat('yyyy-MM-dd').format(widget.patient.daten!) : null,
+      'address': widget.patient.adress,
+      'profession': widget.patient.proff,
+      'reference': widget.patient.ref,
+    }).then((_) {
+      print("Patient updated successfully in Firestore.");
+      widget.onUpdate(widget.patient);  // Update the local data
+      Navigator.pop(context);  // Optionally pop back
+    }).catchError((error) {
+      print("Error updating patient: $error");
+      // Optionally show an error message to the user
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -140,6 +166,8 @@ class _EditPatientPageState extends State<EditPatientPage> {
                     onPressed: () {
                       if (_formKey.currentState!.validate()) {
                         widget.onUpdate(widget.patient);
+                        updatePatientInFirestore();
+
                         Navigator.pop(context);
                       }
                     },

@@ -63,7 +63,7 @@ class _VoicettState extends State<Voicett> {
       child: Icon(
         Icons.mic,
         color: _isListening ? Colors.red : Colors.grey,
-        size: 30.0,
+        size: 40.0,
       ),
     );
   }

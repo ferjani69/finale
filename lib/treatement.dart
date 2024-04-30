@@ -1,3 +1,5 @@
+import 'package:intl/intl.dart';
+
 class treatement {
   String? _id;
   DateTime? _datetreat;
@@ -50,5 +52,28 @@ class treatement {
 
   set recu(int? value) {
     _recu = value;
+  }
+  factory treatement.fromFirestore(Map<String, dynamic> firestore, String documentId) {
+    DateTime? treatDate;
+    try {
+      if (firestore['dateOfBirth'] != null) {
+        treatDate = DateFormat('yyyy-MM-dd').parse(firestore['dateOfBirth']);
+      }
+    } catch (e) {
+      print("Error parsing birth date: $e");
+      treatDate = null;
+    }
+
+    return treatement(
+      documentId,
+      treatDate, // Now a DateTime object
+      int.tryParse(firestore['dent']?.toString() ?? '') as String?,
+      firestore['Natureintrv'] as String?,
+      firestore['Notes'] as String?,
+      int.tryParse(firestore['doit']?.toString() ?? ''),
+      int.tryParse(firestore['recu']?.toString() ?? ''),
+
+
+    );
   }
 }

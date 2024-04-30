@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "563322289900",
-    "project_id": "dentist-bf8bb",
-    "storage_bucket": "dentist-bf8bb.appspot.com"
+    "project_number": "81473550052",
+    "project_id": "dentalexpert-62520",
+    "storage_bucket": "dentalexpert-62520.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:563322289900:android:84d36bc56dc329841f2fc9",
+        "mobilesdk_app_id": "1:81473550052:android:6376765590361251565ef1",
         "android_client_info": {
           "package_name": "com.example.search"
         }
@@ -15,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyDLUWJLleZm3cahE_7g0pEtb3TqZhqQqHk"
+          "current_key": "AIzaSyBkJx1s134cXUdNPI5V1hjaEqI4mcCJni4"
         }
       ],
       "services": {

@@ -6,6 +6,9 @@ import 'package:search/treatmentlist.dart';
 import 'package:search/Patients%20class/patient.dart';
 import 'Edittreatement.dart';
 import 'Widgets/Drawerwidget.dart'; // Import the AppDrawer widget
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_core/firebase_core.dart' ;
+import 'package:get/get.dart';
 
 class TreatmentRecordsPage extends StatefulWidget {
   final Patient patient;
@@ -19,7 +22,42 @@ class TreatmentRecordsPage extends StatefulWidget {
   State<TreatmentRecordsPage> createState() => _TreatmentRecordsPageState();
 }
 
-class _TreatmentRecordsPageState extends State<TreatmentRecordsPage> {
+class _TreatmentRecordsPageState extends State<TreatmentRecordsPage> {  List<treatement> display_list = [];  // This holds the list of patients displayed in the UI
+
+void initState() {
+  super.initState();
+  fetchTreatement();  // Fetch data when the widget initializes
+}
+void navigateToTreatmentChart() async {
+  final result = await Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (context) => TreatmentChart(
+        patient: widget.patient,
+        addtreat: addTreatmentToDisplayList,
+      ),
+    ),
+  );
+
+  if (result == true) {
+    fetchTreatement();  // Re-fetch treatments to refresh the list
+  }
+}
+void fetchTreatement() async {
+  FirebaseFirestore.instance.collection("Treatements").get().then((querySnapshot) {
+    List<treatement> tempList = [];  // Temporary list to hold fetched data
+    for (var doc in querySnapshot.docs) {
+      Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+      treatement treat = treatement.fromFirestore(data, doc.id);  // Assuming a correct fromFirestore method exists
+      tempList.add(treat);
+    }
+    setState(() {
+      display_list = tempList;  // Update the state with the new list
+    });
+  }).catchError((error) {
+    print("Error fetching patients from Firestore: $error");
+  });
+}
   void updatedlist(treatement updatedtreat) {
     setState(() {
       int index1 = display_list.indexWhere((treatement) => treatement.id == updatedtreat.id);
@@ -28,6 +66,12 @@ class _TreatmentRecordsPageState extends State<TreatmentRecordsPage> {
       }
     });
   }
+void addTreatmentToDisplayList(treatement newTreatment) {
+  setState(() {
+    display_list.add(newTreatment);
+  });
+}
+
   void edittreatmentdetails(treatement treat) {
     Navigator.push(
       context,
@@ -91,17 +135,16 @@ class _TreatmentRecordsPageState extends State<TreatmentRecordsPage> {
                     children: [
                       IconButton(
                         onPressed: () {
+
                           Navigator.push(
                             context,
                             MaterialPageRoute(
                               builder: (context) => TreatmentChart(
                                 patient:widget.patient,
-                                addtreat: (newTreatment) {
+                                addtreat: addTreatmentToDisplayList ,
 
-                                  setState(() {
-                                    display_list.add(newTreatment);
-                                  });
-                                },
+
+
                               ),
                             ),
                           );

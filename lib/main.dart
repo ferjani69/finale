@@ -7,9 +7,13 @@ import 'package:search/Patients%20class/patient.dart';
 import 'package:search/edit_patient_page.dart';
 import 'Patients class/ptientsList.dart';
 import 'package:search/ViewPatientPage.dart';
-import 'Widgets/Drawerwidget.dart'; // Import the AppDrawer widget
-
-void main() {
+// Import the AppDrawer widget
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_core/firebase_core.dart' ;
+import 'package:get/get.dart';
+void main() async{
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
   runApp(const MyApp());
 }
 
@@ -17,6 +21,7 @@ class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
   @override
+
   Widget build(BuildContext context) {
     return const MaterialApp(
       home: SearchPage(patientadd: null,),
@@ -35,6 +40,28 @@ class SearchPage extends StatefulWidget {
 }
 
 class _SearchPageState extends State<SearchPage> {
+  List<Patient> display_list = [];  // This holds the list of patients displayed in the UI
+
+  void initState() {
+    super.initState();
+    fetchPatients();  // Fetch data when the widget initializes
+  }
+
+  void fetchPatients() async {
+    FirebaseFirestore.instance.collection("Patients").get().then((querySnapshot) {
+      List<Patient> tempList = [];  // Temporary list to hold fetched data
+      for (var doc in querySnapshot.docs) {
+        Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+        Patient patient = Patient.fromFirestore(data, doc.id);  // Assuming a correct fromFirestore method exists
+        tempList.add(patient);
+      }
+      setState(() {
+        display_list = tempList;  // Update the state with the new list
+      });
+    }).catchError((error) {
+      print("Error fetching patients from Firestore: $error");
+    });
+  }
   void updatelist(String value) {
     setState(() {
       display_list = patient_list.where((element) =>
@@ -136,6 +163,7 @@ class _SearchPageState extends State<SearchPage> {
             Expanded(
               child: ListView.builder(
                 itemCount: display_list.length,
+
                 itemBuilder: (BuildContext context, index) => GestureDetector(
                   onTap: () {
                     Navigator.push(
@@ -145,6 +173,7 @@ class _SearchPageState extends State<SearchPage> {
                       ),
                     );
                   },
+
                   child: Padding(
                     padding: const EdgeInsets.only(bottom: 8.0),
                     child: Card(
@@ -190,7 +219,10 @@ class _SearchPageState extends State<SearchPage> {
                                   onPressed: () => editPatientDetails(display_list[index]),
                                 ),
                                 IconButton(
+
                                   onPressed: () {
+                                    Patient patient = display_list[index];
+
                                     showDialog(
                                       context: context,
                                       builder: (BuildContext context) {
@@ -207,7 +239,25 @@ class _SearchPageState extends State<SearchPage> {
                                             TextButton(
                                               onPressed: () {
                                                 setState(() {
-                                                  display_list.removeAt(index);
+                                                  display_list.removeAt(index); // Remove from Firestore
+                                                  if (patient.id != null && patient.id!.isNotEmpty) {
+                                                    FirebaseFirestore.instance.collection("Patients")
+                                                        .doc(patient.id)
+                                                        .delete()
+                                                        .then((_) {
+                                                      print("Patient successfully deleted from Firestore!");
+                                                    })
+                                                        .catchError((error) {
+                                                      print("Error removing document: $error");
+                                                      // Optionally, re-add the patient to the local list if the deletion failed
+                                                      setState(() {
+                                                        display_list.insert(index, patient);
+                                                      });
+                                                      ScaffoldMessenger.of(context).showSnackBar(
+                                                          SnackBar(content: Text('Failed to delete patient from cloud.'))
+                                                      );
+                                                    });
+                                                  }
                                                 });
                                                 Navigator.of(context).pop();
                                               },
@@ -236,4 +286,3 @@ class _SearchPageState extends State<SearchPage> {
     );
   }
 }
-

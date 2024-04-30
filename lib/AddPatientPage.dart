@@ -8,7 +8,8 @@ import 'package:intl/intl.dart';
 import 'package:search/Patients%20class/ptientsList.dart';
 import 'Widgets/Drawerwidget.dart'; // Import the AppDrawer widget
 import 'Widgets/Voicett.dart';
-
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_core/firebase_core.dart' ;
 
 
 class AddPatientPage extends StatefulWidget {
@@ -39,17 +40,17 @@ class _AddPatientPageState extends State<AddPatientPage> {
 
   final TextEditingController referenceController = TextEditingController();
 
-  void _showdatepicker() async{
-    final DateTime? selectedDate= await
-    showDatePicker(context: context,
+  void _showDatePicker() async {
+    final DateTime? selectedDate = await showDatePicker(
+      context: context,
       initialDate: DateTime.now(),
       firstDate: DateTime(2000),
       lastDate: DateTime(2080),
     );
-    if (selectedDate!=null){
+    if (selectedDate != null) {
       setState(() {
         final formattedDate= '${selectedDate.year}-${selectedDate.month.toString().padLeft(2, '0')}-${selectedDate.day.toString().padLeft(2, '0')}';
-        birthDateController.text=formattedDate;
+        birthDateController.text = formattedDate;
       });
     }
   }
@@ -63,12 +64,20 @@ class _AddPatientPageState extends State<AddPatientPage> {
       String birthDateString = birthDateController.text; // Get the birth date string
 
       // Convert the birth date string into a DateTime object
-      DateTime? birthDate;
+      DateTime? birthdate;
       try {
-        birthDate = DateFormat('yyyy-MM-dd').parse(birthDateString);
+        birthdate = DateFormat('yyyy-MM-dd').parse(birthDateString);
       } catch (e) {
         print('Error parsing birth date: $e');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Invalid date format. Please use YYYY-MM-DD.'),
+            backgroundColor: Colors.red,
+          ),
+        );
+        return; // Exit if the date parse fails
       }
+      String formattedDate = DateFormat('yyyy-MM-dd').format(birthdate);
 
       String address = addressController.text;
       String profession = professionController.text;
@@ -80,7 +89,7 @@ class _AddPatientPageState extends State<AddPatientPage> {
         firstName,
         lastName,
         int.parse(phoneNumber),
-        birthDate, // Assign the parsed birth date
+        birthdate, // Assign the parsed birth date
         address,
         profession,
         reference,
@@ -99,6 +108,23 @@ class _AddPatientPageState extends State<AddPatientPage> {
           content: Text('Patient added successfully'),
         ),
       );
+      CollectionReference patients = FirebaseFirestore.instance.collection("Patients");
+      patients.add({
+
+        'firstname': firstName,
+        'lastname': lastName,
+        'phonenumber': phoneNumber,
+        'dateOfBirth':formattedDate, // Firestore will handle DateTime correctly
+        'address': address,
+        'profession': profession,
+        'reference': reference,
+      }).then((docRef) {
+        print("Document written with ID: ${docRef.id}");
+        // Update the ID of newPatient if necessary
+        newPatient.id = docRef.id;
+      }).catchError((error) {
+        print("Error adding document: $error");
+      });
       Navigator.push(
         context,
         MaterialPageRoute(
@@ -249,7 +275,7 @@ class _AddPatientPageState extends State<AddPatientPage> {
                 ),
                 const SizedBox(height: 16.0),
                 TextFormField(
-                  onTap: _showdatepicker,
+                  onTap: _showDatePicker,
                   autovalidateMode: AutovalidateMode.onUserInteraction,
                   controller: birthDateController,
                   decoration: InputDecoration(

@@ -45,13 +45,13 @@ class _OCROptionsPageState extends State<OCROptionsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('OCR Options'),
+        title: const Text('OCR Options'),
       ),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text('OCR Options'),
+            const Text('OCR Options'),
             ElevatedButton.icon(
               onPressed: () {
                 _pickimage(ImageSource.camera).then((value) {
@@ -60,10 +60,10 @@ class _OCROptionsPageState extends State<OCROptionsPage> {
                   }
                 });
               },
-              icon: Icon (Icons.camera_alt),
-              label: Text('Take Photo'),
+              icon: const Icon (Icons.camera_alt),
+              label: const Text('Take Photo'),
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             ElevatedButton.icon(
               onPressed: () {
                 _pickimage(ImageSource.gallery).then((value) {
@@ -71,8 +71,8 @@ class _OCROptionsPageState extends State<OCROptionsPage> {
                     textRecognition(_image!);
                   }
                 });},
-              icon: Icon(Icons.photo),
-              label: Text('Import from Gallery'),
+              icon: const Icon(Icons.photo),
+              label: const Text('Import from Gallery'),
             ),
             Text(text.toString())
           ],
@@ -81,13 +81,5 @@ class _OCROptionsPageState extends State<OCROptionsPage> {
     );
   }
 
-  void _navigateToCameraScreen(BuildContext context) {
-    // Navigate to camera screen or perform OCR directly
-    // Example: Navigator.push(context, MaterialPageRoute(builder: (context) => CameraScreen()));
-  }
 
-  void _importFromGallery(BuildContext context) {
-    // Navigate to gallery screen or import image for OCR
-    // Example: Navigator.push(context, MaterialPageRoute(builder: (context) => GalleryScreen()));
-  }
 }
