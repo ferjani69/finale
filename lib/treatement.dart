@@ -1,4 +1,7 @@
 import 'package:intl/intl.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_core/firebase_core.dart' ;
+import 'package:get/get.dart';
 
 class treatement {
   String? _id;
@@ -53,27 +56,22 @@ class treatement {
   set recu(int? value) {
     _recu = value;
   }
-  factory treatement.fromFirestore(Map<String, dynamic> firestore, String documentId) {
-    DateTime? treatDate;
-    try {
-      if (firestore['dateOfBirth'] != null) {
-        treatDate = DateFormat('yyyy-MM-dd').parse(firestore['dateOfBirth']);
-      }
-    } catch (e) {
-      print("Error parsing birth date: $e");
-      treatDate = null;
-    }
+  // Your fields and constructor
 
+  factory treatement.fromFirestore(Map<String, dynamic> data, String docId) {
     return treatement(
-      documentId,
-      treatDate, // Now a DateTime object
-      int.tryParse(firestore['dent']?.toString() ?? '') as String?,
-      firestore['Natureintrv'] as String?,
-      firestore['Notes'] as String?,
-      int.tryParse(firestore['doit']?.toString() ?? ''),
-      int.tryParse(firestore['recu']?.toString() ?? ''),
-
-
+      docId,
+      data['treatDate'] is Timestamp
+          ? (data['treatDate'] as Timestamp).toDate()
+          : DateTime.parse(data['treatDate'] as String),
+      data['dent'] as String?,
+      data['Natureintrv'] as String?,
+      data['Notes'] as String?,
+      data['doit'] is int ? data['doit'] as int : int.parse(data['doit'].toString()), // Convert to int
+      data['recu'] is int ? data['recu'] as int : int.parse(data['recu'].toString()), // Convert to int
     );
   }
 }
+
+
+

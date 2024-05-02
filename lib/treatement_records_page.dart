@@ -2,96 +2,54 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:search/treatement.dart'; // Corrected import statement
 import 'package:search/treatement_chart.dart';
-import 'package:search/treatmentlist.dart';
 import 'package:search/Patients%20class/patient.dart';
+import 'package:search/treatmentlist.dart';
 import 'Edittreatement.dart';
-import 'Widgets/Drawerwidget.dart'; // Import the AppDrawer widget
+// Import the AppDrawer widget
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_core/firebase_core.dart' ;
-import 'package:get/get.dart';
+
+// Adjust import as necessary
+
+
+
+
+
+// Corrected import statement
 
 class TreatmentRecordsPage extends StatefulWidget {
   final Patient patient;
-
-   TreatmentRecordsPage({Key? key, required this.patient, required this.addtreat}) : super(key: key);
-  final dynamic addtreat;
+  final Function(treatement) addtreat; // Accepting the addtreat function
 
 
+  const TreatmentRecordsPage({Key? key, required this.patient, required this.addtreat,}) : super(key: key);
 
   @override
   State<TreatmentRecordsPage> createState() => _TreatmentRecordsPageState();
 }
 
-class _TreatmentRecordsPageState extends State<TreatmentRecordsPage> {  List<treatement> display_list = [];  // This holds the list of patients displayed in the UI
-
-void initState() {
-  super.initState();
-  fetchTreatement();  // Fetch data when the widget initializes
-}
-void navigateToTreatmentChart() async {
-  final result = await Navigator.push(
-    context,
-    MaterialPageRoute(
-      builder: (context) => TreatmentChart(
-        patient: widget.patient,
-        addtreat: addTreatmentToDisplayList,
-      ),
-    ),
-  );
-
-  if (result == true) {
-    fetchTreatement();  // Re-fetch treatments to refresh the list
-  }
-}
-void fetchTreatement() async {
-  FirebaseFirestore.instance.collection("Treatements").get().then((querySnapshot) {
-    List<treatement> tempList = [];  // Temporary list to hold fetched data
-    for (var doc in querySnapshot.docs) {
-      Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
-      treatement treat = treatement.fromFirestore(data, doc.id);  // Assuming a correct fromFirestore method exists
-      tempList.add(treat);
-    }
-    setState(() {
-      display_list = tempList;  // Update the state with the new list
-    });
-  }).catchError((error) {
-    print("Error fetching patients from Firestore: $error");
-  });
-}
-  void updatedlist(treatement updatedtreat) {
-    setState(() {
-      int index1 = display_list.indexWhere((treatement) => treatement.id == updatedtreat.id);
-      if (index1 != -1) {
-        display_list[index1] =updatedtreat ;
-      }
-    });
-  }
-void addTreatmentToDisplayList(treatement newTreatment) {
-  setState(() {
-    display_list.add(newTreatment);
-  });
-}
-
+class _TreatmentRecordsPageState extends State<TreatmentRecordsPage> {
   void edittreatmentdetails(treatement treat) {
     Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => edittreatment(
           treatement1: treat,
-          onUpdate: updatedlist
+          onUpdate: (updatedtreat) => setState(() {
+            // Assuming fromFirestore exists
+            int index1 = display_list.indexWhere((t) => t.id == updatedtreat.id);
+            if (index1 != -1) {
+              display_list[index1] = updatedtreat;
+            }
+          }),
         ),
       ),
     );
   }
+
   void updateList1(String value) {
-    setState(() {
-      display_list = treatment_list.where((treatment) =>
-      treatment.natureinterv!
-          .toLowerCase()
-          .contains(value.toLowerCase()) ||
-          DateFormat('yyyy-MM-dd').format(treatment.datetreat!).contains(value.toLowerCase())).toList();
-    });
+    // Update displayed treatments by applying filters
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -99,52 +57,67 @@ void addTreatmentToDisplayList(treatement newTreatment) {
         title: Text('Treatment Records - ${widget.patient.pname} ${widget.patient.plname}'),
         backgroundColor: const Color(0xff91C8E4),
       ),
+      body: StreamBuilder<QuerySnapshot>(
+        stream: FirebaseFirestore.instance.collection('Treatements').snapshots(),
+        builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
+          if (snapshot.hasError) {
+            return Center(child: Text("Error: ${snapshot.error}"));
+          }
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
 
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Center(
-                child: Text(
-                  "Search for a Treatment",
-                  style: TextStyle(
-                    color: Color(0xff4682A9),
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 10.0),
-              TextField(
-                onChanged: (value) => updateList1(value),
-                decoration: InputDecoration(
-                  filled: true,
-                  fillColor: const Color(0xff91C8E4),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8.0),
-                    borderSide: BorderSide.none,
-                  ),
-                  hintText: "eg Detartrage",
-                  prefixIcon: const Icon(Icons.search),
-                  prefixIconColor: Colors.white,
-                  suffixIcon: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      IconButton(
-                        onPressed: () {
+          if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+            return const Center(child: Text("No treatments found"));
+          }
 
-                          Navigator.push(
+          List<treatement> treatments = snapshot.data!.docs.map((doc) {
+            Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+            try {
+              return treatement.fromFirestore(data, doc.id); // Ensure this conversion is correct
+            } catch (e) {
+              print("Error parsing data: $e");
+              return null;
+            }
+          }).where((t) => t != null).cast<treatement>().toList();
+
+          return SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Center(
+                    child: Text(
+                      "Search for a Treatment",
+                      style: TextStyle(
+                        color: Color(0xff4682A9),
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 10.0),
+                  TextField(
+                    onChanged: (value) => updateList1(value), // Add your filter logic here
+                    decoration: InputDecoration(
+                      filled: true,
+                      fillColor: const Color(0xff91C8E4),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8.0),
+                        borderSide: BorderSide.none,
+                      ),
+                      hintText: "e.g., Detartrage",
+                      prefixIcon: const Icon(Icons.search),
+                      prefixIconColor: Colors.white,
+                      suffixIcon: IconButton(
+                        onPressed: () async {
+                          final result = await Navigator.push(
                             context,
                             MaterialPageRoute(
                               builder: (context) => TreatmentChart(
-                                patient:widget.patient,
-                                addtreat: addTreatmentToDisplayList ,
-
-
-
+                                patient: widget.patient,
+                                addtreat: (newTreatment) => setState(() {}),
                               ),
                             ),
                           );
@@ -153,36 +126,33 @@ void addTreatmentToDisplayList(treatement newTreatment) {
                         color: Colors.white,
                         iconSize: 30,
                       ),
-
-
-                    ],
+                    ),
                   ),
-                ),
+                  const SizedBox(height: 16.0),
+                  Text(
+                    'Treatments for ${widget.patient.pname} ${widget.patient.plname}:',
+                    style: const TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold, color: Color(0xff4682A9)),
+                  ),
+                  const SizedBox(height: 16.0),
+                  ListView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: treatments.length,
+                    itemBuilder: (context, index1) {
+                      final treatment = treatments[index1];
+                      return _buildTreatmentItem(treatment, index1);
+                    },
+                  ),
+                ],
               ),
-              const SizedBox(height: 16.0),
-              Text(
-                'Treatments for ${widget.patient.pname} ${widget.patient.plname}:',
-                style: const TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold, color: Color(0xff4682A9)),
-              ),
-              const SizedBox(height: 16.0),
-              ListView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: display_list.length,
-                // Use display_list instead of treatment_list
-                itemBuilder: (context, index1) {
-                  final treatment = display_list[index1]; // Use display_list instead of treatment_list
-                  return _buildTreatmentItem(treatment,index1);
-                },
-              ),
-            ],
-          ),
-        ),
+            ),
+          );
+        },
       ),
     );
   }
 
-  Widget _buildTreatmentItem(treatment,int index1) {
+  Widget _buildTreatmentItem(treatement treatment, int index1) {
     return Card(
       color: const Color(0xffECF9FF),
       elevation: 5.0,
@@ -201,18 +171,19 @@ void addTreatmentToDisplayList(treatement newTreatment) {
                   'Date: ${DateFormat('yyyy-MM-dd').format(treatment.datetreat!)}',
                   style: const TextStyle(fontSize: 16.0, fontWeight: FontWeight.bold, color: Color(0xff4682A9)),
                 ),
-        IconButton(
-          icon: const Icon(Icons.edit),
-          color: const Color(0xff4682A9),
-          onPressed: () => edittreatmentdetails(display_list[index1]),
-        ), IconButton(
+                IconButton(
+                  icon: const Icon(Icons.edit),
+                  color: const Color(0xff4682A9),
+                  onPressed: () => edittreatmentdetails(treatment),
+                ),
+                IconButton(
                   onPressed: () {
                     showDialog(
                       context: context,
                       builder: (BuildContext context) {
                         return AlertDialog(
                           title: const Text('Confirm Delete'),
-                          content: const Text('Are you sure you want to delete this patient?'),
+                          content: const Text('Are you sure you want to delete this treatment?'),
                           actions: <Widget>[
                             TextButton(
                               onPressed: () {
@@ -222,9 +193,17 @@ void addTreatmentToDisplayList(treatement newTreatment) {
                             ),
                             TextButton(
                               onPressed: () {
-                                setState(() {
-                                  display_list.removeAt(index1);
-                                });
+                                if (treatment.id != null && treatment.id!.isNotEmpty) {
+                                  FirebaseFirestore.instance.collection("Treatements")
+                                      .doc(treatment.id)
+                                      .delete()
+                                      .then((_) {
+                                    print("Treatment successfully deleted from Firestore!");
+                                  })
+                                      .catchError((error) {
+                                    print("Error removing document: $error");
+                                  });
+                                }
                                 Navigator.of(context).pop();
                               },
                               child: const Text('Yes'),
@@ -236,7 +215,6 @@ void addTreatmentToDisplayList(treatement newTreatment) {
                   },
                   icon: const Icon(Icons.delete, color: Colors.red),
                 ),
-
               ],
             ),
             const SizedBox(height: 8.0),

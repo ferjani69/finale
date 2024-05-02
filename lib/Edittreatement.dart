@@ -3,6 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:search/treatement.dart';
 import 'treatmentlist.dart';
 import 'package:intl/intl.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_core/firebase_core.dart' ;
+import 'package:get/get.dart';
 
 
 class edittreatment extends StatefulWidget {
@@ -28,6 +31,29 @@ class _edittreatmentState extends State<edittreatment> {
             ? DateFormat('yyyy-MM-dd').format(widget.treatement1.datetreat!)
             : ''
     );
+  }
+  void updateTreatmentInFirestore() {
+    if (widget.treatement1.id == null) {
+      // Handle error: treatement ID should not be null
+      print("Error: No Treatement ID available for updating.");
+      return;
+    }
+
+    FirebaseFirestore.instance.collection('Treatements').doc(widget.treatement1.id).update({
+      'treatDate': widget.treatement1.datetreat != null ? DateFormat('yyyy-MM-dd').format(widget.treatement1.datetreat!) : null,
+      'dent': widget.treatement1.dent,
+      'Natureintrv': widget.treatement1.natureinterv,
+      'Notes': widget.treatement1.notes,
+      'doit': widget.treatement1.doit,
+      'recu': widget.treatement1.recu,
+    }).then((_) {
+      print("Patient updated successfully in Firestore.");
+      widget.onUpdate(widget.treatement1);  // Update the local data
+      Navigator.pop(context);  // Optionally pop back
+    }).catchError((error) {
+      print("Error updating patient: $error");
+      // Optionally show an error message to the user
+    });
   }
 
   @override
@@ -107,7 +133,6 @@ class _edittreatmentState extends State<edittreatment> {
                 const SizedBox(height: 16.0),
                 TextFormField(
                   initialValue: widget.treatement1.natureinterv.toString(),
-                  keyboardType: TextInputType.phone,
                   decoration: InputDecoration(
                       labelText: 'Nature Intervention',
                       border: OutlineInputBorder(
@@ -164,6 +189,7 @@ class _edittreatmentState extends State<edittreatment> {
                     style: ElevatedButton.styleFrom(backgroundColor: const Color(0xff91C8E4)),
                     onPressed: () {
                       if (_formKey.currentState!.validate()) {
+                        updateTreatmentInFirestore(); // Call the function with parentheses
                         widget.onUpdate(widget.treatement1);
                         Navigator.pop(context);
                       }

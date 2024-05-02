@@ -4,7 +4,7 @@ import 'package:flutter_svg_provider/flutter_svg_provider.dart';
 import 'package:path_drawing/path_drawing.dart';
 import 'package:search/Patients%20class/patient.dart';
 import 'package:search/treatement_records_page.dart';
-import 'package:search/treatmentlist.dart';
+import 'package:search/Widgets/Voicett.dart';
 import 'OCR0ptionsPage.dart';
 import 'treatement.dart';
 import 'package:xml/xml.dart';
@@ -50,40 +50,38 @@ class _TreatmentChartState extends State<TreatmentChart> {
     }
   }
   void _submitForm() {
-    String formattedDate='' ;
-
     if (_formKey.currentState!.validate()) {
-      // Process form data here
-      print('Form submitted');
       String notes = notesController.text;
       String natureintv = natureIntervController.text;
       String doit = doitController.text;
       String recu = recuController.text;
       String tretdate = dateController.text;
+
       treatement newtret = treatement(
-        "unique_id",
+        null,
         DateTime.parse(tretdate),
         dent,
         natureintv,
         notes,
         int.parse(doit),
         int.parse(recu),
-      );   CollectionReference Treatements = FirebaseFirestore.instance.collection("Treatements");
-      Treatements.add({
+      );
 
-        'treatDate':DateTime.parse(tretdate),
-        'dent': int.parse(dent),
-        'Natureintrv': natureintv,
-        'Notes':notes, // Firestore will handle DateTime correctly
-        'doit': int.parse(doit),
-        'recu': int.parse(recu),
+      FirebaseFirestore.instance.collection("Treatements").add({
+        'treatDate': newtret.datetreat!.toIso8601String(),
+        'dent': newtret.dent,
+        'Natureintrv': newtret.natureinterv,
+        'Notes': newtret.notes,
+        'doit': newtret.doit,
+        'recu': newtret.recu,
       }).then((docRef) {
-        print("Document written with ID: ${docRef.id}");
-        // Update the ID of newPatient if necessary
         newtret.id = docRef.id;
         widget.addtreat(newtret);
+        Navigator.pop(context, true);
       }).catchError((error) {
         print("Error adding document: $error");
+        Navigator.pop(context, false); // Indicate an error occurred
+
       });
 
       // Clear text fields
@@ -92,36 +90,11 @@ class _TreatmentChartState extends State<TreatmentChart> {
       notesController.clear();
       doitController.clear();
       recuController.clear();
-
-      // Show snackbar
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Treatments added successfully'),
-        ),
-      );
-
-      widget.addtreat(newtret);
-
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => TreatmentRecordsPage(
-            patient: widget.patient, // Replace patientObject with your patient data
-            addtreat: (newTreatment) {
-              setState(() {
-                display_list.add(newTreatment);
-              });
-            },
-          ),
-        ),
-      );
     } else {
-      // Show snackbar for invalid input
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please check your inputs'),
-        ),
-      );
+      // Show error message
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text('Please check your inputs'),
+      ));
     }
   }
   @override
@@ -187,93 +160,125 @@ class _TreatmentChartState extends State<TreatmentChart> {
                   ),
                   const SizedBox(height: 16),
                   Material(
-                    child: TextFormField(
-                      autovalidateMode: AutovalidateMode.onUserInteraction,
-                      controller: natureIntervController,
-                      decoration:  InputDecoration(
-                        labelText: 'Nature of Intervention',
-                          border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10.0))),
-                      validator: (value) {
-                        if (value!.isEmpty) {
-                          return 'Please enter nature of intervention';
-                        }
-                        if (value.startsWith(' ')) { // Check if the value starts with a space
-                          return 'Nature of intervention cannot start with a space';
-                        }
-                        if (!RegExp(r'^[a-zA-Z0-9\s]+$').hasMatch(value)) {
-                          return 'Please enter valid nature of intervention';
-                        }
-                        // You can add more validation if needed
-                        return null;
-                      },
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  Material(
-                    child: TextFormField(
-                      autovalidateMode: AutovalidateMode.onUserInteraction,
-                      controller: notesController,
-                      decoration:  InputDecoration(
-                          labelText: 'Note',
-                          border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10.0))),
-                      validator: (value) {
-                        if (value!.isEmpty) {
-                          return 'Please enter a Note';
-                        }
-                        if (value.startsWith(' ')) { // Check if the value starts with a space
-                          return 'Note cannot start with a space';
-                        }
-                        if (!RegExp(r'^[a-zA-Z0-9\s]+$').hasMatch(value)) {
-                          return 'Please enter valid Note';
-                        }
-                        // You can add more validation if needed
-                        return null;
-                      },
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  Material(
-                    child: TextFormField(
-                      autovalidateMode: AutovalidateMode.onUserInteraction,
-                      controller: doitController,
-                      keyboardType: TextInputType.number,
-                      inputFormatters:<TextInputFormatter> [
-                        FilteringTextInputFormatter.digitsOnly
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: TextFormField(
+                            autovalidateMode: AutovalidateMode.onUserInteraction,
+                            controller: natureIntervController,
+                            decoration:  InputDecoration(
+                              labelText: 'Nature of Intervention',
+                                border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(10.0))),
+                            validator: (value) {
+                              if (value!.isEmpty) {
+                                return 'Please enter nature of intervention';
+                              }
+                              if (value.startsWith(' ')) { // Check if the value starts with a space
+                                return 'Nature of intervention cannot start with a space';
+                              }
+                              if (!RegExp(r'^[a-zA-Z0-9\s]+$').hasMatch(value)) {
+                                return 'Please enter valid nature of intervention';
+                              }
+                              // You can add more validation if needed
+                              return null;
+                            },
+                          ),
+                        ),
+                        Voicett(controller: natureIntervController),
+
                       ],
-                      decoration:  InputDecoration(
-                        labelText: 'Charge',
-                          border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10.0))),
-                      validator: (value) {
-                        if (value!.isEmpty) {
-                          return 'Please enter Your Charge amount';
-                        }
-                        // You can add more validation if needed
-                        return null;
-                      },
                     ),
                   ),
                   const SizedBox(height: 16),
                   Material(
-                    child: TextFormField(
-                      controller: recuController,
-                      keyboardType: TextInputType.number,
-                      inputFormatters:<TextInputFormatter> [
-                        FilteringTextInputFormatter.digitsOnly
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: TextFormField(
+                            autovalidateMode: AutovalidateMode.onUserInteraction,
+                            controller: notesController,
+                            decoration:  InputDecoration(
+                                labelText: 'Note',
+                                border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(10.0))),
+                            validator: (value) {
+                              if (value!.isEmpty) {
+                                return 'Please enter a Note';
+                              }
+                              if (value.startsWith(' ')) { // Check if the value starts with a space
+                                return 'Note cannot start with a space';
+                              }
+                              if (!RegExp(r'^[a-zA-Z0-9\s]+$').hasMatch(value)) {
+                                return 'Please enter valid Note';
+                              }
+                              // You can add more validation if needed
+                              return null;
+                            },
+                          ),
+                        ),
+                        Voicett(controller: notesController),
+
                       ],
-                      decoration: InputDecoration(
-                        labelText: 'Payment',
-                          border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10.0))),
-                      validator: (value) {
-                        if (value!.isEmpty) {
-                          return 'Please enter Your Payment amount';
-                        }
-                        // You can add more validation if needed
-                        return null;
-                      },
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Material(
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: TextFormField(
+                            autovalidateMode: AutovalidateMode.onUserInteraction,
+                            controller: doitController,
+                            keyboardType: TextInputType.number,
+                            inputFormatters:<TextInputFormatter> [
+                              FilteringTextInputFormatter.digitsOnly
+                            ],
+                            decoration:  InputDecoration(
+                              labelText: 'Charge',
+                                border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(10.0))),
+                            validator: (value) {
+                              if (value!.isEmpty) {
+                                return 'Please enter Your Charge amount';
+                              }
+                              // You can add more validation if needed
+                              return null;
+                            },
+                          ),
+                        ),
+                        Voicett(controller:doitController),
+
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Material(
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: TextFormField(
+                            controller: recuController,
+                            keyboardType: TextInputType.number,
+                            inputFormatters:<TextInputFormatter> [
+                              FilteringTextInputFormatter.digitsOnly
+                            ],
+                            decoration: InputDecoration(
+                              labelText: 'Payment',
+                                border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(10.0))),
+                            validator: (value) {
+                              if (value!.isEmpty) {
+                                return 'Please enter Your Payment amount';
+                              }
+                              // You can add more validation if needed
+                              return null;
+                            },
+                          ),
+                        ),
+                        Voicett(controller: recuController),
+
+                      ],
                     ),
                   ),
                   const SizedBox(height: 20),
