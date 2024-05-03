@@ -52,36 +52,34 @@ class _TreatmentChartState extends State<TreatmentChart> {
   void _submitForm() {
     if (_formKey.currentState!.validate()) {
       String notes = notesController.text;
-      String natureintv = natureIntervController.text;
+      String natureIntv = natureIntervController.text;
       String doit = doitController.text;
       String recu = recuController.text;
-      String tretdate = dateController.text;
+      String treatDate = dateController.text;
 
-      treatement newtret = treatement(
-        null,
-        DateTime.parse(tretdate),
-        dent,
-        natureintv,
-        notes,
-        int.parse(doit),
-        int.parse(recu),
+      treatement newTreat = treatement(
+          null, // Firestore will generate the ID
+          DateTime.parse(treatDate),
+          dent,
+          natureIntv,
+          notes,
+          int.parse(doit),
+          int.parse(recu),
+          widget.patient.id // Pass the patient ID from the widget
       );
 
-      FirebaseFirestore.instance.collection("Treatements").add({
-        'treatDate': newtret.datetreat!.toIso8601String(),
-        'dent': newtret.dent,
-        'Natureintrv': newtret.natureinterv,
-        'Notes': newtret.notes,
-        'doit': newtret.doit,
-        'recu': newtret.recu,
-      }).then((docRef) {
-        newtret.id = docRef.id;
-        widget.addtreat(newtret);
+      FirebaseFirestore.instance
+          .collection('Patients')
+          .doc(widget.patient.id) // Use the patient's ID
+          .collection('treatements') // Use the treatments subcollection
+          .add(newTreat.toFirestore()) // Convert the object to Firestore data
+          .then((docRef) {
+        newTreat.id = docRef.id; // Update the ID of the treatment
+        widget.addtreat(newTreat); // Call the callback function
         Navigator.pop(context, true);
       }).catchError((error) {
         print("Error adding document: $error");
         Navigator.pop(context, false); // Indicate an error occurred
-
       });
 
       // Clear text fields
@@ -91,12 +89,12 @@ class _TreatmentChartState extends State<TreatmentChart> {
       doitController.clear();
       recuController.clear();
     } else {
-      // Show error message
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
         content: Text('Please check your inputs'),
       ));
     }
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(

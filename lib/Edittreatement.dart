@@ -6,13 +6,14 @@ import 'package:intl/intl.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart' ;
 import 'package:get/get.dart';
+import 'package:search/Patients%20class/patient.dart';
 
 
 class edittreatment extends StatefulWidget {
   final treatement treatement1;
   final Function(treatement) onUpdate;
-
-  const edittreatment({super.key, required this.treatement1, required this.onUpdate});
+  final Patient patient;
+  const edittreatment({super.key, required this.treatement1, required this.onUpdate,required this.patient});
 
 
   @override
@@ -39,7 +40,10 @@ class _edittreatmentState extends State<edittreatment> {
       return;
     }
 
-    FirebaseFirestore.instance.collection('Treatements').doc(widget.treatement1.id).update({
+    FirebaseFirestore.instance
+        .collection('Patients')
+        .doc(widget.patient.id) // The patient's ID
+        .collection('treatements').doc(widget.treatement1.id).update({
       'treatDate': widget.treatement1.datetreat != null ? DateFormat('yyyy-MM-dd').format(widget.treatement1.datetreat!) : null,
       'dent': widget.treatement1.dent,
       'Natureintrv': widget.treatement1.natureinterv,

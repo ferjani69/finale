@@ -9,6 +9,13 @@ class treatement {
   String? _dent;
   String? _natureinterv;
   String?_notes;
+  String? _patientId;
+
+  String? get patientId => _patientId;
+
+  set patientId(String? value) {
+    _patientId = value;
+  }
 
   String? get notes => _notes;
 
@@ -25,7 +32,7 @@ class treatement {
   int? _doit;
   int? _recu;
 
-  treatement(this._id,this._datetreat, this._dent, this._natureinterv,this._notes, this._doit, this._recu,);
+  treatement(this._id,this._datetreat, this._dent, this._natureinterv,this._notes, this._doit, this._recu,this._patientId);
 
   DateTime? get datetreat => _datetreat;
 
@@ -69,8 +76,21 @@ class treatement {
       data['Notes'] as String?,
       data['doit'] is int ? data['doit'] as int : int.parse(data['doit'].toString()), // Convert to int
       data['recu'] is int ? data['recu'] as int : int.parse(data['recu'].toString()), // Convert to int
+      data['patientId'] as String, // New field
     );
   }
+  Map<String, dynamic> toFirestore() {
+    return {
+      'treatDate': datetreat != null ? datetreat!.toIso8601String() : null,
+      'dent': dent,
+      'Natureintrv': natureinterv,
+      'Notes': notes,
+      'doit': doit,
+      'recu': recu,
+      'patientId': patientId, // Add patientId to Firestore data
+    };
+  }
+
 }
 
 
