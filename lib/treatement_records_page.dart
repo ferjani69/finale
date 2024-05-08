@@ -19,7 +19,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 class TreatmentRecordsPage extends StatefulWidget {
   final Patient patient;
-  final Function(treatement) addtreat; // Accepting the addtreat function
+  final Function(Treatement) addtreat; // Accepting the addtreat function
 
 
   const TreatmentRecordsPage({Key? key, required this.patient, required this.addtreat,}) : super(key: key);
@@ -29,7 +29,7 @@ class TreatmentRecordsPage extends StatefulWidget {
 }
 
 class _TreatmentRecordsPageState extends State<TreatmentRecordsPage> {
-  void edittreatmentdetails(treatement treat, {required Patient patient}) {
+  void edittreatmentdetails(Treatement treat, {required Patient patient}) {
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -129,15 +129,15 @@ class _TreatmentRecordsPageState extends State<TreatmentRecordsPage> {
               return const Center(child: Text("No treatments found"));
             }
 
-            List<treatement> treatments = snapshot.data!.docs.map((doc) {
+            List<Treatement> treatments = snapshot.data!.docs.map((doc) {
               Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
               try {
-                return treatement.fromFirestore(data, doc.id); // Ensure this conversion is correct
+                return Treatement.fromFirestore(data, doc.id); // Ensure this conversion is correct
               } catch (e) {
                 print("Error parsing data: $e");
                 return null;
               }
-            }).where((t) => t != null).cast<treatement>().toList();
+            }).where((t) => t != null).cast<Treatement>().toList();
 
             return SingleChildScrollView(
               child: Padding(
@@ -167,7 +167,7 @@ class _TreatmentRecordsPageState extends State<TreatmentRecordsPage> {
     ])));
   }
 
-  Widget _buildTreatmentItem(treatement treatment, int index1) {
+  Widget _buildTreatmentItem(Treatement treatment, int index1) {
     return Card(
       color: const Color(0xffECF9FF),
       elevation: 5.0,

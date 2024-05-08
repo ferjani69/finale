@@ -210,7 +210,14 @@ class _AddPatientPageState extends State<AddPatientPage> {
                               ),
                             ),
                             validator: (value) {
-                              // Your validation logic here
+                              if (value!.isEmpty) {
+                                return "Please enter a last name";
+                              }
+                              // Check if the value contains only alphabetic characters
+                              if (!RegExp(r'^[a-zA-Z]+$').hasMatch(value)) {
+                                return "Please enter a valid last name containing only alphabetic characters";
+                              }
+                              return null;
                             },
 
                           ),
@@ -238,11 +245,11 @@ class _AddPatientPageState extends State<AddPatientPage> {
                                 borderRadius: BorderRadius.circular(10.0))),
                         validator: (value) {
                           if (value!.isEmpty) {
-                            return "Please enter a first name";
+                            return "Please enter a last name";
                           }
                           // Check if the value contains only alphabetic characters
                           if (!RegExp(r'^[a-zA-Z]+$').hasMatch(value)) {
-                            return "Please enter a valid first name containing only alphabetic characters";
+                            return "Please enter a valid last name containing only alphabetic characters";
                           }
                           return null;
                         },
@@ -314,11 +321,11 @@ class _AddPatientPageState extends State<AddPatientPage> {
                                 borderRadius: BorderRadius.circular(10.0))),
                         validator: (value) {
                           if (value!.isEmpty) {
-                            return "Please enter a first name";
+                            return "Please enter an adress";
                           }
                           // Check if the value contains only alphabetic characters, spaces, and periods (.)
                           if (!RegExp(r'^[a-zA-Z\s.]+$').hasMatch(value)) {
-                            return "Please enter a valid first name containing only alphabetic characters, spaces, and periods";
+                            return "Please enter a valid adress containing only alphabetic characters, spaces, and periods";
                           }
                           return null;
                         },
@@ -342,11 +349,11 @@ class _AddPatientPageState extends State<AddPatientPage> {
                                 borderRadius: BorderRadius.circular(10.0))),
                         validator: (value) {
                           if (value!.isEmpty) {
-                            return "Please enter a first name";
+                            return "Please enter a profession";
                           }
                           // Check if the value contains only alphabetic characters
                           if (!RegExp(r'^[a-zA-Z]+$').hasMatch(value)) {
-                            return "Please enter a valid first name containing only alphabetic characters";
+                            return "Please enter a valid profession containing only alphabetic characters";
                           }
                           return null;
                         },

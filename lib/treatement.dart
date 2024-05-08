@@ -3,7 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart' ;
 import 'package:get/get.dart';
 
-class treatement {
+class Treatement {
   String? _id;
   DateTime? _datetreat;
   String? _dent;
@@ -32,7 +32,7 @@ class treatement {
   int? _doit;
   int? _recu;
 
-  treatement(this._id,this._datetreat, this._dent, this._natureinterv,this._notes, this._doit, this._recu,this._patientId);
+  Treatement(this._id,this._datetreat, this._dent, this._natureinterv,this._notes, this._doit, this._recu,this._patientId);
 
   DateTime? get datetreat => _datetreat;
 
@@ -65,8 +65,8 @@ class treatement {
   }
   // Your fields and constructor
 
-  factory treatement.fromFirestore(Map<String, dynamic> data, String docId) {
-    return treatement(
+  factory Treatement.fromFirestore(Map<String, dynamic> data, String docId) {
+    return Treatement(
       docId,
       data['treatDate'] is Timestamp
           ? (data['treatDate'] as Timestamp).toDate()

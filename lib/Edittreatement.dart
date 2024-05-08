@@ -10,8 +10,8 @@ import 'package:search/Patients%20class/patient.dart';
 
 
 class edittreatment extends StatefulWidget {
-  final treatement treatement1;
-  final Function(treatement) onUpdate;
+  final Treatement treatement1;
+  final Function(Treatement) onUpdate;
   final Patient patient;
   const edittreatment({super.key, required this.treatement1, required this.onUpdate,required this.patient});
 

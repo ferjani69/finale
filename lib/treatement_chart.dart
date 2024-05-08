@@ -17,7 +17,7 @@ import 'package:get/get.dart';
 String dent='';
 
 class TreatmentChart extends StatefulWidget {
-  final Function(treatement) addtreat; // Define the callback function
+  final Function(Treatement) addtreat; // Define the callback function
   final Patient patient;
   const TreatmentChart({super.key, required this.addtreat, required this.patient});
 
@@ -57,7 +57,7 @@ class _TreatmentChartState extends State<TreatmentChart> {
       String recu = recuController.text;
       String treatDate = dateController.text;
 
-      treatement newTreat = treatement(
+      Treatement newTreat = Treatement(
           null, // Firestore will generate the ID
           DateTime.parse(treatDate),
           dent,

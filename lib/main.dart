@@ -1,77 +1,79 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:search/AddPatientPage.dart';
 import 'package:search/Widgets/Drawerwidget.dart';
 import 'package:search/Patients%20class/patient.dart';
 import 'package:search/edit_patient_page.dart';
-import 'Patients class/ptientsList.dart';
 import 'package:search/ViewPatientPage.dart';
 // Import the AppDrawer widget
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart' ;
-import 'package:get/get.dart';
+import 'package:search/Login.dart';
 void main() async{
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
   FirebaseFirestore.instance.settings = const Settings(persistenceEnabled: true);
 
-  runApp(const MyApp());
+  runApp( const MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+   const MyApp({super.key});
 
   @override
 
   Widget build(BuildContext context) {
-    return const MaterialApp(
-      home: SearchPage(patientadd: null,),
-    );
+    return  MaterialApp(
+      home: LoginPage(),    );
   }
 }
 
 
 class SearchPage extends StatefulWidget {
-  const SearchPage({Key? key, required this.patientadd}) : super(key: key);
+  const SearchPage({super.key, required this.patientadd});
 
   final dynamic patientadd;
 
   @override
   State<SearchPage> createState() => _SearchPageState();
 }
+List<Patient> allPatients = [];
 
 class _SearchPageState extends State<SearchPage> {
   List<Patient> display_list = [];  // This holds the list of patients displayed in the UI
 
+  @override
   void initState() {
-    super.initState();
+
     fetchPatients();  // Fetch data when the widget initializes
   }
 
   void fetchPatients() async {
     FirebaseFirestore.instance.collection("Patients").get().then((querySnapshot) {
-      List<Patient> tempList = [];  // Temporary list to hold fetched data
+      List<Patient> tempList = [];
       for (var doc in querySnapshot.docs) {
-        Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
-        Patient patient = Patient.fromFirestore(data, doc.id);  // Assuming a correct fromFirestore method exists
+        Map<String, dynamic> data = doc.data();
+        Patient patient = Patient.fromFirestore(data, doc.id);
         tempList.add(patient);
       }
       setState(() {
-        display_list = tempList;  // Update the state with the new list
+        allPatients = tempList; // Store all patients
+        display_list = List.from(allPatients); // Set display_list to all patients initially
       });
     }).catchError((error) {
-      print("Error fetching patients from Firestore: $error");
     });
   }
+
   void updatelist(String value) {
     setState(() {
-      display_list = patient_list.where((element) =>
-      element.pname.toString().toLowerCase().contains(value.toLowerCase()) ||
-          element.telnum.toString().toLowerCase().contains(value.toLowerCase())
-      ).toList();
+      display_list = allPatients.where((element) {
+        final pname = element.pname?.toLowerCase() ?? '';
+        final telnum = element.telnum?.toString().toLowerCase() ?? '';
+
+        return pname.contains(value.toLowerCase()) || telnum.contains(value.toLowerCase());
+      }).toList();
     });
   }
+
 
   void editPatientDetails(Patient patient) {
     Navigator.push(
@@ -125,15 +127,16 @@ class _SearchPageState extends State<SearchPage> {
               children: [
                 Expanded(
                   child: TextField(
+
                     onChanged: (value) => updatelist(value),
                     decoration: InputDecoration(
                       filled: true,
                       fillColor: const Color(0xff91C8E4),
+                      hintText:  "eg Youssef Ferjani",
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8.0),
                         borderSide: BorderSide.none,
                       ),
-                      hintText: "eg Youssef Ferjani",
                       prefixIcon: const Icon(Icons.search),
                       prefixIconColor: Colors.white,
                     ),
@@ -149,7 +152,6 @@ class _SearchPageState extends State<SearchPage> {
                             setState(() {
                               display_list.add(newPatient);
                             });
-                            print('Patient added: $newPatient');
                           },
                         ),
                       ),
@@ -247,16 +249,14 @@ class _SearchPageState extends State<SearchPage> {
                                                         .doc(patient.id)
                                                         .delete()
                                                         .then((_) {
-                                                      print("Patient successfully deleted from Firestore!");
                                                     })
                                                         .catchError((error) {
-                                                      print("Error removing document: $error");
                                                       // Optionally, re-add the patient to the local list if the deletion failed
                                                       setState(() {
                                                         display_list.insert(index, patient);
                                                       });
                                                       ScaffoldMessenger.of(context).showSnackBar(
-                                                          SnackBar(content: Text('Failed to delete patient from cloud.'))
+                                                          const SnackBar(content: Text('Failed to delete patient from cloud.'))
                                                       );
                                                     });
                                                   }
