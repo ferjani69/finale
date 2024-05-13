@@ -1,11 +1,12 @@
 import 'dart:ui';
+import 'package:search/forgotpw.dart';
 import 'package:search/main.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-
+import 'package:search/forgotpw.dart';
 
 
 class LoginPage extends StatefulWidget {
@@ -142,7 +143,10 @@ class _LoginPageState extends State<LoginPage> {
                   onPressed:_isLoading ?null : login,
                   child: _isLoading ? CircularProgressIndicator(color: Colors.white) : Text('Login'),                ),
                 TextButton(
-                  onPressed: () {
+                  onPressed: () {Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                      builder: (context) => Forgotpw()));
                     // Implement forgot password logic
                   },
                   child: Text('Forgot password?'),

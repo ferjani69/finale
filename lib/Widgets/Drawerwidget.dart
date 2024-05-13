@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart'; // Import Cupertino for the CupertinoIcons
+import 'package:search/Feedback.dart';
+import 'package:search/Privacy.dart';
 import 'package:search/main.dart';
 
 class Drawerw extends StatelessWidget {
@@ -41,14 +43,19 @@ class Drawerw extends StatelessWidget {
           ListTile(
             leading: const Icon(Icons.feedback), // Add the feedback icon
             title: const Text('Send Feedback'), // Specify the title
-            onTap: () {
+            onTap: () {Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => FeedbackFormPage(),));
+              // Handle tap event
               // Handle tap event
             },
           ),
           ListTile(
             leading: const Icon(Icons.privacy_tip), // Add the privacy icon
             title: const Text('Privacy and Policy'), // Specify the title
-            onTap: () {
+            onTap: () {Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => Privacypolicy(),));
               // Handle tap event
             },
           ),
