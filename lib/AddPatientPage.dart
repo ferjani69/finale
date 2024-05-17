@@ -1,6 +1,4 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:search/OCR0ptionsPage.dart';
 import 'package:search/main.dart';
 import 'package:search/Patients%20class/patient.dart';
@@ -9,36 +7,41 @@ import 'package:search/Patients%20class/ptientsList.dart';
 import 'Widgets/Drawerwidget.dart'; // Import the AppDrawer widget
 import 'Widgets/Voicett.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_core/firebase_core.dart' ;
-
 
 class AddPatientPage extends StatefulWidget {
-
   final Function(Patient) patientadd; // Define the callback function
+  final Map<String, String>? initialData; // Add this line to accept initial data
 
-  AddPatientPage({required this.patientadd});
+  const AddPatientPage({super.key, required this.patientadd, this.initialData}); // Add initialData as an optional parameter
 
   @override
   State<AddPatientPage> createState() => _AddPatientPageState();
 }
 
 class _AddPatientPageState extends State<AddPatientPage> {
-
   final GlobalKey<FormState> _formkey = GlobalKey<FormState>();
 
   final TextEditingController firstNameController = TextEditingController();
-
   final TextEditingController lastNameController = TextEditingController();
-
   final TextEditingController phoneNumberController = TextEditingController();
-
   final TextEditingController birthDateController = TextEditingController();
-
   final TextEditingController addressController = TextEditingController();
-
   final TextEditingController professionController = TextEditingController();
-
   final TextEditingController referenceController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.initialData != null) {
+      firstNameController.text = widget.initialData!['firstName'] ?? '';
+      lastNameController.text = widget.initialData!['lastName'] ?? '';
+      phoneNumberController.text = widget.initialData!['phoneNumber'] ?? '';
+      birthDateController.text = widget.initialData!['birthDate'] ?? '';
+      addressController.text = widget.initialData!['address'] ?? '';
+      professionController.text = widget.initialData!['profession'] ?? '';
+      referenceController.text = widget.initialData!['reference'] ?? '';
+    }
+  }
 
   void _showDatePicker() async {
     final DateTime? selectedDate = await showDatePicker(
@@ -49,8 +52,33 @@ class _AddPatientPageState extends State<AddPatientPage> {
     );
     if (selectedDate != null) {
       setState(() {
-        final formattedDate= '${selectedDate.year}-${selectedDate.month.toString().padLeft(2, '0')}-${selectedDate.day.toString().padLeft(2, '0')}';
+        final formattedDate = '${selectedDate.year}-${selectedDate.month.toString().padLeft(2, '0')}-${selectedDate.day.toString().padLeft(2, '0')}';
         birthDateController.text = formattedDate;
+      });
+    }
+  }
+
+  void _navigateToOCROptions() async {
+    final patientData = await Navigator.push<Map<String, String>>(
+      context,
+      MaterialPageRoute(
+        builder: (context) => OCROptionsPage(
+          onExtractedData: (data) {
+            Navigator.pop(context, data);
+          },
+        ),
+      ),
+    );
+
+    if (patientData != null) {
+      setState(() {
+        firstNameController.text = patientData['firstName'] ?? '';
+        lastNameController.text = patientData['lastName'] ?? '';
+        phoneNumberController.text = patientData['phoneNumber'] ?? '';
+        birthDateController.text = patientData['birthDate'] ?? '';
+        addressController.text = patientData['address'] ?? '';
+        professionController.text = patientData['profession'] ?? '';
+        referenceController.text = patientData['reference'] ?? '';
       });
     }
   }
@@ -68,9 +96,8 @@ class _AddPatientPageState extends State<AddPatientPage> {
       try {
         birthdate = DateFormat('yyyy-MM-dd').parse(birthDateString);
       } catch (e) {
-        print('Error parsing birth date: $e');
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
+          const SnackBar(
             content: Text('Invalid date format. Please use YYYY-MM-DD.'),
             backgroundColor: Colors.red,
           ),
@@ -110,34 +137,20 @@ class _AddPatientPageState extends State<AddPatientPage> {
       );
       CollectionReference patients = FirebaseFirestore.instance.collection("Patients");
       patients.add({
-
         'firstname': firstName,
         'lastname': lastName,
         'phonenumber': phoneNumber,
-        'dateOfBirth':formattedDate, // Firestore will handle DateTime correctly
+        'dateOfBirth': formattedDate, // Firestore will handle DateTime correctly
         'address': address,
         'profession': profession,
         'reference': reference,
       }).then((docRef) {
-        print("Document written with ID: ${docRef.id}");
         // Update the ID of newPatient if necessary
         newPatient.id = docRef.id;
       }).catchError((error) {
-        print("Error adding document: $error");
+        // Handle error
       });
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => SearchPage(
-            patientadd: (newPatient) {
-              setState(() {
-                display_list.add(newPatient);
-              });
-            },
-          ),
-        ),
-      );
-    }else {
+    } else {
       // Show snackbar for invalid input
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -165,6 +178,19 @@ class _AddPatientPageState extends State<AddPatientPage> {
     return null;
   }
 
+  String? _validateName(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Please enter a name';
+    }
+
+    // Check if the value contains only alphabetic characters and optionally spaces if followed by another word
+    if (!RegExp(r'^[a-zA-Z]+(?: [a-zA-Z]+)*$').hasMatch(value)) {
+      return 'Please enter a valid name containing only alphabetic characters and spaces if followed by another word';
+    }
+
+    return null;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -175,63 +201,39 @@ class _AddPatientPageState extends State<AddPatientPage> {
         actions: [
           IconButton(
             padding: const EdgeInsets.only(right: 30.0), // Adjust the padding as needed for spacing
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => OCROptionsPage()),
-              );
-            },
+            onPressed: _navigateToOCROptions, // Call the function here
             icon: const Icon(Icons.camera_alt),
           ),
         ],
       ),
-      drawer: const Drawerw(), // Use the AppDrawer widget here
-
-
-      body:
-      Padding(
+      drawer: Drawerw(), // Use the AppDrawer widget here
+      body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: SingleChildScrollView(
           child: Form(
             key: _formkey,
             child: Column(
               children: [
-
-                    Row(
-                      children: [
-                        Expanded(
-                          child: TextFormField(
-                            autovalidateMode: AutovalidateMode.onUserInteraction,
-                            controller: firstNameController,
-                            decoration: InputDecoration(
-                              labelText: 'First name',
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(10.0),
-                              ),
-                            ),
-                            validator: (value) {
-                              if (value!.isEmpty) {
-                                return "Please enter a last name";
-                              }
-                              // Check if the value contains only alphabetic characters
-                              if (!RegExp(r'^[a-zA-Z]+$').hasMatch(value)) {
-                                return "Please enter a valid last name containing only alphabetic characters";
-                              }
-                              return null;
-                            },
-
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextFormField(
+                        autovalidateMode: AutovalidateMode.onUserInteraction,
+                        controller: firstNameController,
+                        decoration: InputDecoration(
+                          labelText: 'First name',
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10.0),
                           ),
-
                         ),
-                        Voicett(controller: firstNameController),
-                      ],
+                        validator: _validateName,
+                      ),
                     ),
-
-                    const SizedBox(height: 16.0),
-                    // Other TextFormField widgets...
-
-
-
+                    Voicett(controller: firstNameController),
+                  ],
+                ),
+                const SizedBox(height: 16.0),
+                // Other TextFormField widgets...
                 const SizedBox(height: 16.0),
                 Row(
                   children: [
@@ -240,24 +242,15 @@ class _AddPatientPageState extends State<AddPatientPage> {
                         autovalidateMode: AutovalidateMode.onUserInteraction,
                         controller: lastNameController,
                         decoration: InputDecoration(
-                            labelText: 'Last name',
-                            border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(10.0))),
-                        validator: (value) {
-                          if (value!.isEmpty) {
-                            return "Please enter a last name";
-                          }
-                          // Check if the value contains only alphabetic characters
-                          if (!RegExp(r'^[a-zA-Z]+$').hasMatch(value)) {
-                            return "Please enter a valid last name containing only alphabetic characters";
-                          }
-                          return null;
-                        },
-
+                          labelText: 'Last name',
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10.0),
+                          ),
+                        ),
+                        validator: _validateName,
                       ),
                     ),
                     Voicett(controller: lastNameController),
-
                   ],
                 ),
                 const SizedBox(height: 16.0),
@@ -267,17 +260,17 @@ class _AddPatientPageState extends State<AddPatientPage> {
                       child: TextFormField(
                         autovalidateMode: AutovalidateMode.onUserInteraction,
                         keyboardType: TextInputType.phone,
-                      
                         controller: phoneNumberController,
                         decoration: InputDecoration(
-                            labelText: 'Phone Number',
-                            border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(10.0))),
+                          labelText: 'Phone Number',
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10.0),
+                          ),
+                        ),
                         validator: _validatePhonenumber,
                       ),
                     ),
                     Voicett(controller: phoneNumberController),
-
                   ],
                 ),
                 const SizedBox(height: 16.0),
@@ -286,10 +279,10 @@ class _AddPatientPageState extends State<AddPatientPage> {
                   autovalidateMode: AutovalidateMode.onUserInteraction,
                   controller: birthDateController,
                   decoration: InputDecoration(
-                      labelText: 'Birth Date (YYYY-MM-DD)', // Specify the expected format
-                      border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10.0)
-                      )
+                    labelText: 'Birth Date (YYYY-MM-DD)', // Specify the expected format
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10.0),
+                    ),
                   ),
                   validator: (value) {
                     if (value!.isEmpty) {
@@ -316,24 +309,24 @@ class _AddPatientPageState extends State<AddPatientPage> {
                         autovalidateMode: AutovalidateMode.onUserInteraction,
                         controller: addressController,
                         decoration: InputDecoration(
-                            labelText: 'Adresse ',
-                            border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(10.0))),
+                          labelText: 'Address',
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10.0),
+                          ),
+                        ),
                         validator: (value) {
                           if (value!.isEmpty) {
-                            return "Please enter an adress";
+                            return "Please enter an address";
                           }
                           // Check if the value contains only alphabetic characters, spaces, and periods (.)
                           if (!RegExp(r'^[a-zA-Z\s.]+$').hasMatch(value)) {
-                            return "Please enter a valid adress containing only alphabetic characters, spaces, and periods";
+                            return "Please enter a valid address containing only alphabetic characters, spaces, and periods";
                           }
                           return null;
                         },
-
                       ),
                     ),
                     Voicett(controller: addressController),
-
                   ],
                 ),
                 const SizedBox(height: 16.0),
@@ -344,9 +337,11 @@ class _AddPatientPageState extends State<AddPatientPage> {
                         autovalidateMode: AutovalidateMode.onUserInteraction,
                         controller: professionController,
                         decoration: InputDecoration(
-                            labelText: 'Profession',
-                            border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(10.0))),
+                          labelText: 'Profession',
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10.0),
+                          ),
+                        ),
                         validator: (value) {
                           if (value!.isEmpty) {
                             return "Please enter a profession";
@@ -357,11 +352,9 @@ class _AddPatientPageState extends State<AddPatientPage> {
                           }
                           return null;
                         },
-
                       ),
                     ),
                     Voicett(controller: professionController),
-
                   ],
                 ),
                 const SizedBox(height: 16.0),
@@ -372,13 +365,14 @@ class _AddPatientPageState extends State<AddPatientPage> {
                         autovalidateMode: AutovalidateMode.onUserInteraction,
                         controller: referenceController,
                         decoration: InputDecoration(
-                            labelText: 'Reference',
-                            border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(10.0))),
+                          labelText: 'Reference',
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10.0),
+                          ),
+                        ),
                       ),
                     ),
                     Voicett(controller: referenceController),
-
                   ],
                 ),
                 const SizedBox(height: 16.0),
@@ -386,9 +380,10 @@ class _AddPatientPageState extends State<AddPatientPage> {
                   height: 50,
                   width: double.infinity,
                   child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(backgroundColor: const Color(0xff91C8E4)),
-                      onPressed: _submitForm,
-                      child: const Text("Submit Your Patient")),
+                    style: ElevatedButton.styleFrom(backgroundColor: const Color(0xff91C8E4)),
+                    onPressed: _submitForm,
+                    child: const Text("Submit Your Patient"),
+                  ),
                 ),
               ],
             ),

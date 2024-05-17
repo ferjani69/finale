@@ -55,6 +55,8 @@ dependencies:
   flutter_svg: ^2.0.10+1
   xml: ^6.5.0
   path_drawing: ^1.0.1
+  flutter_settings_ui: ^3.0.0
+
   google_mlkit_text_recognition: ^0.11.0
   flutter:
     sdk: flutter
@@ -83,10 +85,12 @@ dev_dependencies:
 flutter:
   assets:
     - assets/teeth.svg
-    - assets/hassen.png
     - assets/waves.svg
     - assets/wavestop.svg
     - assets/Privacypolicy.md
+    - assets/female.png
+    - assets/dentalexpert.png
+
 
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in

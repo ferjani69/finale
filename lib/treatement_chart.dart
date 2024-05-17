@@ -49,6 +49,7 @@ class _TreatmentChartState extends State<TreatmentChart> {
       });
     }
   }
+
   void _submitForm() {
     if (_formKey.currentState!.validate()) {
       String notes = notesController.text;
@@ -104,17 +105,15 @@ class _TreatmentChartState extends State<TreatmentChart> {
             IconButton(
               padding: const EdgeInsets.only(right: 30.0), // Adjust the padding as needed for spacing
               onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => OCROptionsPage()),
-                );
+
+
               },
               icon: const Icon(Icons.camera_alt ),iconSize: 30,
 
             ),
           ],
         ),
-        drawer: const Drawerw(), // Use the AppDrawer widget here
+        drawer:  Drawerw(), // Use the AppDrawer widget here
 
         body: SingleChildScrollView(
       child: Column(

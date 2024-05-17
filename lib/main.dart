@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:search/AddPatientPage.dart';
 import 'package:search/Widgets/Drawerwidget.dart';
@@ -43,6 +44,7 @@ class _SearchPageState extends State<SearchPage> {
 
   @override
   void initState() {
+    super.initState();
 
     fetchPatients();  // Fetch data when the widget initializes
   }
@@ -101,10 +103,26 @@ class _SearchPageState extends State<SearchPage> {
     return Scaffold(
       backgroundColor: const Color(0XFFF6F4EB),
       appBar: AppBar(
-        backgroundColor: const Color(0xff91C8E4),
-        elevation: 0.0,
+    backgroundColor: Colors.blue,
+    leading: IconButton(
+    icon: const Icon(Icons.menu),  // Drawer icon
+    onPressed: () {
+    Scaffold.of(context).openDrawer();  // Open the drawer
+    },
+    ),
+    title: Center(
+    child: SizedBox(
+      height: 200,
+      width: 120,
+      child: Image.asset(
+
+      'assets/dentalexpert.png', // Ensure the asset path is correct
+      height: 55,  // Adjusted for visibility
       ),
-      drawer: const Drawerw(), // Use the AppDrawer widget here
+    ),
+    ),
+      ),
+      drawer:  Drawerw(), // Use the AppDrawer widget here
 
       body: Padding(
         padding: const EdgeInsets.all(20),
@@ -125,24 +143,23 @@ class _SearchPageState extends State<SearchPage> {
             const SizedBox(height: 10.00,),
             Row(
               children: [
-                Expanded(
-                  child: TextField(
+                   Expanded(
+                     child: TextField(
 
-                    onChanged: (value) => updatelist(value),
-                    decoration: InputDecoration(
-                      filled: true,
-                      fillColor: const Color(0xff91C8E4),
-                      hintText:  "eg Youssef Ferjani",
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8.0),
-                        borderSide: BorderSide.none,
+                      onChanged: (value) => updatelist(value),
+                      decoration: InputDecoration(
+                        filled: true,
+                        fillColor: const Color(0xff91C8E4),
+                        hintText:  "eg Youssef Ferjani",
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8.0),
+                          borderSide: BorderSide.none,
+                        ),
+                        prefixIcon: const Icon(Icons.search),
+                        prefixIconColor: Colors.white,
                       ),
-                      prefixIcon: const Icon(Icons.search),
-                      prefixIconColor: Colors.white,
-                    ),
-                  ),
-                ),
-                IconButton(
+                                       ),
+                   ), IconButton(
                   onPressed: () {
                     Navigator.push(
                       context,
@@ -152,7 +169,7 @@ class _SearchPageState extends State<SearchPage> {
                             setState(() {
                               display_list.add(newPatient);
                             });
-                          },
+                          }, initialData: {},
                         ),
                       ),
                     );
@@ -160,7 +177,9 @@ class _SearchPageState extends State<SearchPage> {
                   icon: const Icon(Icons.person_add),
                   color: const Color(0xff91C8E4),
                   iconSize: 30,
+
                 ),
+
               ],
             ),
             const SizedBox(height: 10.00,),
