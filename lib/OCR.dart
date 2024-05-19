@@ -1,13 +1,12 @@
 import 'dart:io';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
 import 'package:image_picker/image_picker.dart';
 
 class OCR extends StatefulWidget {
-  final Function(Map<String, String>) onTextSelected;
+  final Function(Map<String, String>) onDataCollected;
 
-  OCR({required this.onTextSelected});
+  const OCR({super.key, required this.onDataCollected});
 
   @override
   State<OCR> createState() => _OCRState();
@@ -15,150 +14,158 @@ class OCR extends StatefulWidget {
 
 class _OCRState extends State<OCR> {
   File? _image;
-  List<Map<String, String>>? parsedTreatments;
-  Map<String, String>? selectedTreatment;
-  String? recognizedText;
+  Map<String, List<String>> dataGroups = {};
+  final TextEditingController indexController = TextEditingController();
 
-  Future textRecognition(File img) async {
-    final textRecognizer = TextRecognizer(script: TextRecognitionScript.latin);
-    final inputImage = InputImage.fromFilePath(img.path);
-    final RecognizedText recognizedTextResult = await textRecognizer.processImage(inputImage);
-    setState(() {
-      recognizedText = recognizedTextResult.text;
-      parsedTreatments = parseExtractedText(recognizedTextResult.text);
-    });
-    print('Recognized text: ${recognizedTextResult.text}');
-    print('Parsed treatments: $parsedTreatments');
-  }
-
-  Future _pickImage(ImageSource source) async {
-    try {
-      final image = await ImagePicker().pickImage(source: source);
-      if (image == null) return;
+  Future<void> _pickImage(ImageSource source) async {
+    final image = await ImagePicker().pickImage(source: source);
+    if (image != null) {
       setState(() {
         _image = File(image.path);
       });
-      if (_image != null) {
-        await textRecognition(_image!);
-      }
-    } catch (e) {
-      if (kDebugMode) {
-        print(e);
-      }
+      await _processImage(_image!);
     }
   }
 
-  List<Map<String, String>> parseExtractedText(String extractedText) {
-    List<Map<String, String>> treatments = [];
-    List<String> lines = extractedText.split('\n');
+  Future<void> _processImage(File image) async {
+    final textRecognizer = TextRecognizer(script: TextRecognitionScript.latin);
+    final inputImage = InputImage.fromFilePath(image.path);
+    final RecognizedText recognizedText = await textRecognizer.processImage(
+        inputImage);
 
-    for (String line in lines) {
-      print('Processing line: $line');
-      List<String> columns = line.split(RegExp(r'\s{2,}'));
-      if (columns.length >= 5) {
-        final treatment = {
-          'date': columns[0],
-          'dent': columns[1],
-          'natureInterv': columns[2],
-          'doit': columns[3],
-          'recu': columns[4],
-        };
-        print('Parsed treatment: $treatment');
-        treatments.add(treatment);
-      } else if (columns.isNotEmpty) {
-        print('Skipped line due to insufficient columns: $line');
+    Map<String, List<String>> tempDataGroups = {
+      'Date': [],
+      'Dent': [],
+      'Nature des interventions': [],
+      'Doit': [],
+      'Reçu': []
+    };
+
+    String? currentHeader;
+    List<String> lines = recognizedText.text.split('\n');
+    for (var line in lines) {
+      if (tempDataGroups.containsKey(line.trim())) {
+        currentHeader = line.trim();
+      } else if (currentHeader != null && line
+          .trim()
+          .isNotEmpty) {
+        tempDataGroups[currentHeader]?.add(line.trim());
       }
     }
 
-    return treatments;
-  }
-
-  void _onSelectRow(Map<String, String> treatment) {
     setState(() {
-      selectedTreatment = treatment;
+      dataGroups = tempDataGroups;
     });
   }
 
-  void _confirmSelection() {
-    if (selectedTreatment != null) {
-      widget.onTextSelected(selectedTreatment!);
-      Navigator.pop(context); // Navigate back to the previous page
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('No treatment selected. Please select a line.'),
-        ),
-      );
-    }
+  void _returnDataToForm() {
+    int index = int.tryParse(indexController.text) ??
+        1; // Default to 1 if parse fails
+    index = index - 1; // Convert to zero-based index
+    Map<String, String> selectedData = {
+      'Date': dataGroups['Date']?.elementAt(index) ?? '',
+      'Dent': dataGroups['Dent']?.elementAt(index) ?? '',
+      'Nature des interventions': dataGroups['Nature des interventions']
+          ?.elementAt(index) ?? '',
+      'Doit': dataGroups['Doit']?.elementAt(index) ?? '',
+      'Reçu': dataGroups['Reçu']?.elementAt(index) ?? '',
+    };
+
+    widget.onDataCollected(selectedData);
+    Navigator.pop(context);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('OCR Options'),
+        backgroundColor: const Color(0xff91C8E4),
+        title: const Text('OCR Data Collection', style: TextStyle(color: Colors.white)),
       ),
-      body: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Text('OCR Options'),
-          ElevatedButton.icon(
-            onPressed: () {
-              _pickImage(ImageSource.camera);
-            },
-            icon: const Icon(Icons.camera_alt),
-            label: const Text('Take Photo'),
-          ),
-          const SizedBox(height: 20),
-          ElevatedButton.icon(
-            onPressed: () {
-              _pickImage(ImageSource.gallery);
-            },
-            icon: const Icon(Icons.photo),
-            label: const Text('Import from Gallery'),
-          ),
-          if (_image != null) Image.file(_image!), // Display the selected image
-          if (recognizedText != null && parsedTreatments != null)
-            Expanded(
-              child: SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: DataTable(
-                  columns: const [
-                    DataColumn(label: Text('Date')),
-                    DataColumn(label: Text('Dent')),
-                    DataColumn(label: Text('Nature')),
-                    DataColumn(label: Text('Doit')),
-                    DataColumn(label: Text('Recu')),
-                  ],
-                  rows: parsedTreatments!.map((treatment) {
-                    return DataRow(
-                      selected: selectedTreatment == treatment,
-                      onSelectChanged: (selected) {
-                        if (selected == true) {
-                          _onSelectRow(treatment);
-                        }
-                      },
-                      cells: [
-                        DataCell(Text(treatment['date'] ?? '')),
-                        DataCell(Text(treatment['dent'] ?? '')),
-                        DataCell(Text(treatment['natureInterv'] ?? '')),
-                        DataCell(Text(treatment['doit'] ?? '')),
-                        DataCell(Text(treatment['recu'] ?? '')),
-                      ],
-                    );
-                  }).toList(),
+      body: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Column(
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        foregroundColor: Colors.white, backgroundColor: const Color(0xff91C8E4), // button background color
+                        padding: const EdgeInsets.symmetric(vertical: 10),
+                      ),
+                      onPressed: () => _pickImage(ImageSource.gallery),
+                      icon: const Icon(Icons.photo, size: 20),
+                      label: const Text('Import from Gallery', style: TextStyle(fontSize: 14)),
+                    ),
+                  ),
                 ),
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        foregroundColor: Colors.white, backgroundColor: const Color(0xff91C8E4), // button background color
+                        padding: const EdgeInsets.symmetric(vertical: 10),
+                      ),
+                      onPressed: () => _pickImage(ImageSource.camera),
+                      icon: const Icon(Icons.camera_alt, size: 20),
+                      label: const Text('Take Photo', style: TextStyle(fontSize: 14)),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            if (_image != null) Container(
+              margin: const EdgeInsets.symmetric(vertical: 10),
+              height: MediaQuery.of(context).size.width * 0.6, // Adjust the size to make the image smaller
+              child: Image.file(_image!, fit: BoxFit.cover),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: TextField(
+                controller: indexController,
+                decoration: InputDecoration(
+                  labelText: 'Enter index number (starting from 1)',
+                  labelStyle: TextStyle(color: Colors.grey[600]),
+                  enabledBorder: const OutlineInputBorder(
+                    borderSide: BorderSide(color: Color(0xff91C8E4)),
+                  ),
+                  focusedBorder: const OutlineInputBorder(
+                    borderSide: BorderSide(color: Color(0xff91C8E4)),
+                  ),
+                ),
+                keyboardType: TextInputType.number,
               ),
-            )
-          else if (recognizedText != null && parsedTreatments == null)
-            const CircularProgressIndicator()
-          else
-            const Text('No text recognized. Please try again.'),
-          ElevatedButton(
-            onPressed: _confirmSelection,
-            child: const Text('Confirm and Return'),
-          ),
-        ],
+            ),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  foregroundColor: Colors.white, backgroundColor: const Color(0xff91C8E4),
+                  padding: const EdgeInsets.symmetric(vertical: 10),
+                ),
+                onPressed: _returnDataToForm,
+                child: const Text('Return Data to Form', style: TextStyle(fontSize: 14)),
+              ),
+            ),
+            Expanded(
+              child: ListView.builder(
+                itemCount: dataGroups.keys.length,
+                itemBuilder: (context, index) {
+                  String key = dataGroups.keys.elementAt(index);
+                  return ExpansionTile(
+                    title: Text(key, style: const TextStyle(color: Color(0xff4A6572))),
+                    children: dataGroups[key]!.map((e) => ListTile(title: Text(e, style: const TextStyle(color: Color(0xff4A6572))))).toList(),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

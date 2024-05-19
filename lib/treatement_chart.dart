@@ -29,14 +29,27 @@ class _TreatmentChartState extends State<TreatmentChart> {
   final TextEditingController notesController = TextEditingController();
   final TextEditingController doitController = TextEditingController();
   final TextEditingController recuController = TextEditingController();
-  void _populateForm(Map<String, String> treatment) {
+  void populateFormFields(Map<String, String> data) {
     setState(() {
-      dateController.text = treatment['date'] ?? '';
-      natureIntervController.text = treatment['natureInterv'] ?? '';
-      doitController.text = treatment['doit'] ?? '';
-      recuController.text = treatment['recu'] ?? '';
-      dent = treatment['dent'] ?? '';
+      dateController.text = data['Date'] ?? '';
+      dent = data['Dent'] ?? '';
+      natureIntervController.text = data['Nature des interventions'] ?? '';
+      doitController.text = data['Doit'] ?? '';
+      recuController.text = data['Reçu'] ?? '';
     });
+  }void navigateToOCR() async {
+    final result = await Navigator.push(
+        context,
+        MaterialPageRoute(
+            builder: (context) => OCR(
+              onDataCollected: populateFormFields,
+            )
+        )
+    );
+
+    if (result != null) {
+      populateFormFields(result);
+    }
   }
 
   List<Map<String, String>> parseExtractedText(String extractedText) {
@@ -60,18 +73,6 @@ class _TreatmentChartState extends State<TreatmentChart> {
   }
 
 
-  void _fetchUpdatedData() {
-    FirebaseFirestore.instance
-        .collection('Patients')
-        .doc(widget.patient.id)
-        .collection('treatements')
-        .get()
-        .then((QuerySnapshot querySnapshot) {
-      querySnapshot.docs.forEach((doc) {
-        print(doc.data()); // Verify if data is correctly saved
-      });
-    });
-  }
 
   void _showdatepicker() async {
     final DateTime? selectedDate = await showDatePicker(
@@ -146,22 +147,7 @@ class _TreatmentChartState extends State<TreatmentChart> {
         actions: [
           IconButton(
             padding: const EdgeInsets.only(right: 30.0),
-            onPressed: () async {
-              final selectedTreatment = await Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => OCR(
-                    onTextSelected: (recognizedText) {
-                      Navigator.pop(context, recognizedText); // Directly return the selected treatment
-                    },
-                  ),
-                ),
-              );
-
-              if (selectedTreatment != null && selectedTreatment is Map<String, String>) {
-                _populateForm(selectedTreatment);
-              }
-            },
+            onPressed: navigateToOCR ,
             icon: const Icon(Icons.camera_alt),
             iconSize: 30,
           ),
