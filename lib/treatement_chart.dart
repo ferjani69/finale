@@ -5,19 +5,16 @@ import 'package:path_drawing/path_drawing.dart';
 import 'package:search/Patients%20class/patient.dart';
 import 'package:search/treatement_records_page.dart';
 import 'package:search/Widgets/Voicett.dart';
-import 'OCR0ptionsPage.dart';
 import 'treatement.dart';
 import 'package:xml/xml.dart';
-import 'Widgets/Drawerwidget.dart'; // Import the AppDrawer widget
+import 'Widgets/Drawerwidget.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_core/firebase_core.dart' ;
-import 'package:get/get.dart';
+import 'OCR.dart';
 
-
-String dent='';
+String dent = '';
 
 class TreatmentChart extends StatefulWidget {
-  final Function(Treatement) addtreat; // Define the callback function
+  final Function(Treatement) addtreat;
   final Patient patient;
   const TreatmentChart({super.key, required this.addtreat, required this.patient});
 
@@ -25,27 +22,69 @@ class TreatmentChart extends StatefulWidget {
   State<TreatmentChart> createState() => _TreatmentChartState();
 }
 
-
 class _TreatmentChartState extends State<TreatmentChart> {
-
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController dateController = TextEditingController();
   final TextEditingController natureIntervController = TextEditingController();
   final TextEditingController notesController = TextEditingController();
   final TextEditingController doitController = TextEditingController();
   final TextEditingController recuController = TextEditingController();
+  void _populateForm(Map<String, String> treatment) {
+    setState(() {
+      dateController.text = treatment['date'] ?? '';
+      natureIntervController.text = treatment['natureInterv'] ?? '';
+      doitController.text = treatment['doit'] ?? '';
+      recuController.text = treatment['recu'] ?? '';
+      dent = treatment['dent'] ?? '';
+    });
+  }
 
-  void _showdatepicker() async{
-    final DateTime? selectedDate= await
-    showDatePicker(context: context,
-        initialDate: DateTime.now(),
-        firstDate: DateTime(2000),
-        lastDate: DateTime(2080),
+  List<Map<String, String>> parseExtractedText(String extractedText) {
+    List<Map<String, String>> treatments = [];
+    List<String> lines = extractedText.split('\n');
+
+    for (String line in lines) {
+      List<String> columns = line.split(RegExp(r'\s+'));
+      if (columns.length == 5) {
+        treatments.add({
+          'date': columns[0],
+          'dent': columns[1],
+          'natureInterv': columns[2],
+          'doit': columns[3],
+          'recu': columns[4],
+        });
+      }
+    }
+
+    return treatments;
+  }
+
+
+  void _fetchUpdatedData() {
+    FirebaseFirestore.instance
+        .collection('Patients')
+        .doc(widget.patient.id)
+        .collection('treatements')
+        .get()
+        .then((QuerySnapshot querySnapshot) {
+      querySnapshot.docs.forEach((doc) {
+        print(doc.data()); // Verify if data is correctly saved
+      });
+    });
+  }
+
+  void _showdatepicker() async {
+    final DateTime? selectedDate = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2080),
     );
-    if (selectedDate!=null){
+    if (selectedDate != null) {
       setState(() {
-        final formattedDate= '${selectedDate.year}-${selectedDate.month.toString().padLeft(2, '0')}-${selectedDate.day.toString().padLeft(2, '0')}';
-        dateController.text=formattedDate;
+        final formattedDate =
+            '${selectedDate.year}-${selectedDate.month.toString().padLeft(2, '0')}-${selectedDate.day.toString().padLeft(2, '0')}';
+        dateController.text = formattedDate;
       });
     }
   }
@@ -59,240 +98,253 @@ class _TreatmentChartState extends State<TreatmentChart> {
       String treatDate = dateController.text;
 
       Treatement newTreat = Treatement(
-          null, // Firestore will generate the ID
-          DateTime.parse(treatDate),
-          dent,
-          natureIntv,
-          notes,
-          int.parse(doit),
-          int.parse(recu),
-          widget.patient.id // Pass the patient ID from the widget
+        null,
+        DateTime.parse(treatDate),
+        dent,
+        natureIntv,
+        notes,
+        int.parse(doit),
+        int.parse(recu),
+        widget.patient.id,
       );
 
       FirebaseFirestore.instance
           .collection('Patients')
-          .doc(widget.patient.id) // Use the patient's ID
-          .collection('treatements') // Use the treatments subcollection
-          .add(newTreat.toFirestore()) // Convert the object to Firestore data
+          .doc(widget.patient.id)
+          .collection('treatements')
+          .add(newTreat.toFirestore())
           .then((docRef) {
-        newTreat.id = docRef.id; // Update the ID of the treatment
-        widget.addtreat(newTreat); // Call the callback function
+        newTreat.id = docRef.id;
+        widget.addtreat(newTreat);
         Navigator.pop(context, true);
       }).catchError((error) {
         print("Error adding document: $error");
-        Navigator.pop(context, false); // Indicate an error occurred
+        Navigator.pop(context, false);
       });
 
-      // Clear text fields
       dateController.clear();
       natureIntervController.clear();
       notesController.clear();
       doitController.clear();
       recuController.clear();
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-        content: Text('Please check your inputs'),
-      ));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please check your inputs'),
+        ),
+      );
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          title: const Text('Treatment Chart'),
-          actions: [
-            IconButton(
-              padding: const EdgeInsets.only(right: 30.0), // Adjust the padding as needed for spacing
-              onPressed: () {
-
-
-              },
-              icon: const Icon(Icons.camera_alt ),iconSize: 30,
-
-            ),
-          ],
-        ),
-        drawer:  Drawerw(), // Use the AppDrawer widget here
-
-        body: SingleChildScrollView(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  const Image(
-                    width: 5,
-                    height: 1,
-                    image: Svg('assets/teeth.svg'),
+      backgroundColor: const Color(0xffECF9FF),
+      appBar: AppBar(
+        title: const Text('Treatment Chart'),
+        backgroundColor: const Color(0xff91C8E4),
+        actions: [
+          IconButton(
+            padding: const EdgeInsets.only(right: 30.0),
+            onPressed: () async {
+              final selectedTreatment = await Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => OCR(
+                    onTextSelected: (recognizedText) {
+                      Navigator.pop(context, recognizedText); // Directly return the selected treatment
+                    },
                   ),
-                  const SizedBox(height: 20),
-                  const Foo(
-                    asset: 'assets/teeth.svg',
-                    idToString: adultIdToString,
+                ),
+              );
+
+              if (selectedTreatment != null && selectedTreatment is Map<String, String>) {
+                _populateForm(selectedTreatment);
+              }
+            },
+            icon: const Icon(Icons.camera_alt),
+            iconSize: 30,
+          ),
+        ],
+      ),
+      drawer: Drawerw(),
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const SizedBox(height: 20),
+                const Foo(
+                  asset: 'assets/teeth.svg',
+                  idToString: adultIdToString,
+                ),
+                const SizedBox(height: 20),
+                TextFormField(
+                  autovalidateMode: AutovalidateMode.onUserInteraction,
+                  onTap: _showdatepicker,
+                  controller: dateController,
+                  decoration: InputDecoration(
+                    labelText: 'Treatment Date (YYYY-MM-DD)',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10.0),
+                    ),
+                    filled: true,
+                    fillColor: Colors.white,
                   ),
-                  Material(
-                    child: TextFormField(
-                      autovalidateMode: AutovalidateMode.onUserInteraction,
-                      onTap: _showdatepicker,
-                      controller: dateController,
-                      decoration:  InputDecoration(
-                        labelText: 'Treatment Date (YYYY-MM-DD)',
+                  validator: (value) {
+                    if (value!.isEmpty) {
+                      return 'Please enter a Date';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextFormField(
+                        autovalidateMode: AutovalidateMode.onUserInteraction,
+                        controller: natureIntervController,
+                        decoration: InputDecoration(
+                          labelText: 'Nature of Intervention',
                           border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10.0))
+                            borderRadius: BorderRadius.circular(10.0),
+                          ),
+                          filled: true,
+                          fillColor: Colors.white,
+                        ),
+                        validator: (value) {
+                          if (value!.isEmpty) {
+                            return 'Please enter nature of intervention';
+                          }
+                          if (value.startsWith(' ')) {
+                            return 'Nature of intervention cannot start with a space';
+                          }
+                          if (!RegExp(r'^[a-zA-Z0-9\s]+$').hasMatch(value)) {
+                            return 'Please enter valid nature of intervention';
+                          }
+                          return null;
+                        },
                       ),
-                      validator: (value) {
-                        if (value!.isEmpty) {
-                          return 'Please enter a Date';
-                        }
-                        // You can add more validation if needed
-                        return null;
-                      },
                     ),
-                  ),
-                  const SizedBox(height: 16),
-                  Material(
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: TextFormField(
-                            autovalidateMode: AutovalidateMode.onUserInteraction,
-                            controller: natureIntervController,
-                            decoration:  InputDecoration(
-                              labelText: 'Nature of Intervention',
-                                border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(10.0))),
-                            validator: (value) {
-                              if (value!.isEmpty) {
-                                return 'Please enter nature of intervention';
-                              }
-                              if (value.startsWith(' ')) { // Check if the value starts with a space
-                                return 'Nature of intervention cannot start with a space';
-                              }
-                              if (!RegExp(r'^[a-zA-Z0-9\s]+$').hasMatch(value)) {
-                                return 'Please enter valid nature of intervention';
-                              }
-                              // You can add more validation if needed
-                              return null;
-                            },
+                    Voicett(controller: natureIntervController),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextFormField(
+                        autovalidateMode: AutovalidateMode.onUserInteraction,
+                        controller: notesController,
+                        decoration: InputDecoration(
+                          labelText: 'Note',
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10.0),
                           ),
+                          filled: true,
+                          fillColor: Colors.white,
                         ),
-                        Voicett(controller: natureIntervController),
-
-                      ],
+                        validator: (value) {
+                          if (value!.isEmpty) {
+                            return 'Please enter a Note';
+                          }
+                          if (value.startsWith(' ')) {
+                            return 'Note cannot start with a space';
+                          }
+                          if (!RegExp(r'^[a-zA-Z0-9\s]+$').hasMatch(value)) {
+                            return 'Please enter valid Note';
+                          }
+                          return null;
+                        },
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 16),
-                  Material(
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: TextFormField(
-                            autovalidateMode: AutovalidateMode.onUserInteraction,
-                            controller: notesController,
-                            decoration:  InputDecoration(
-                                labelText: 'Note',
-                                border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(10.0))),
-                            validator: (value) {
-                              if (value!.isEmpty) {
-                                return 'Please enter a Note';
-                              }
-                              if (value.startsWith(' ')) { // Check if the value starts with a space
-                                return 'Note cannot start with a space';
-                              }
-                              if (!RegExp(r'^[a-zA-Z0-9\s]+$').hasMatch(value)) {
-                                return 'Please enter valid Note';
-                              }
-                              // You can add more validation if needed
-                              return null;
-                            },
+                    Voicett(controller: notesController),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextFormField(
+                        autovalidateMode: AutovalidateMode.onUserInteraction,
+                        controller: doitController,
+                        keyboardType: TextInputType.number,
+                        inputFormatters: <TextInputFormatter>[
+                          FilteringTextInputFormatter.digitsOnly
+                        ],
+                        decoration: InputDecoration(
+                          labelText: 'Charge',
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10.0),
                           ),
+                          filled: true,
+                          fillColor: Colors.white,
                         ),
-                        Voicett(controller: notesController),
-
-                      ],
+                        validator: (value) {
+                          if (value!.isEmpty) {
+                            return 'Please enter Your Charge amount';
+                          }
+                          return null;
+                        },
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 16),
-                  Material(
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: TextFormField(
-                            autovalidateMode: AutovalidateMode.onUserInteraction,
-                            controller: doitController,
-                            keyboardType: TextInputType.number,
-                            inputFormatters:<TextInputFormatter> [
-                              FilteringTextInputFormatter.digitsOnly
-                            ],
-                            decoration:  InputDecoration(
-                              labelText: 'Charge',
-                                border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(10.0))),
-                            validator: (value) {
-                              if (value!.isEmpty) {
-                                return 'Please enter Your Charge amount';
-                              }
-                              // You can add more validation if needed
-                              return null;
-                            },
+                    Voicett(controller: doitController),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextFormField(
+                        controller: recuController,
+                        keyboardType: TextInputType.number,
+                        inputFormatters: <TextInputFormatter>[
+                          FilteringTextInputFormatter.digitsOnly
+                        ],
+                        decoration: InputDecoration(
+                          labelText: 'Payment',
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10.0),
                           ),
+                          filled: true,
+                          fillColor: Colors.white,
                         ),
-                        Voicett(controller:doitController),
-
-                      ],
+                        validator: (value) {
+                          if (value!.isEmpty) {
+                            return 'Please enter Your Payment amount';
+                          }
+                          return null;
+                        },
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 16),
-                  Material(
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: TextFormField(
-                            controller: recuController,
-                            keyboardType: TextInputType.number,
-                            inputFormatters:<TextInputFormatter> [
-                              FilteringTextInputFormatter.digitsOnly
-                            ],
-                            decoration: InputDecoration(
-                              labelText: 'Payment',
-                                border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(10.0))),
-                            validator: (value) {
-                              if (value!.isEmpty) {
-                                return 'Please enter Your Payment amount';
-                              }
-                              // You can add more validation if needed
-                              return null;
-                            },
-                          ),
-                        ),
-                        Voicett(controller: recuController),
-
-                      ],
+                    Voicett(controller: recuController),
+                  ],
+                ),
+                const SizedBox(height: 20),
+                SizedBox(
+                  height: 50,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xff91C8E4),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10.0),
+                      ),
+                      textStyle: const TextStyle(color: Colors.white), // Set the text color to white
                     ),
-                  ),
-                  const SizedBox(height: 20),
-                  ElevatedButton(
                     onPressed: _submitForm,
                     child: const Text('Submit'),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
-          const SizedBox(height: 20),
-
-          // Add spacing between widgets as needed
-        ],
+        ),
       ),
-    ));
+    );
   }
 }
 
@@ -327,19 +379,23 @@ class _FooState extends State<Foo> {
     if (data.size == Size.zero) return const UnconstrainedBox();
 
     return Card(
-      child: FractionallySizedBox( // Wrap with FractionallySizedBox
-        widthFactor: 0.7, // Adjust the width factor as needed
+      elevation: 0, // Remove elevation to avoid shadow
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(10),
+      ),
+      color: Colors.transparent, // Set the card background color to transparent
+      child: FractionallySizedBox(
+        widthFactor: 0.7,
         child: FittedBox(
           child: SizedBox.fromSize(
             size: data.size,
             child: Stack(
               children: [
-                // teeth
                 for (final MapEntry<int, Tooth> entry in data.teeth.entries)
                   Positioned.fromRect(
                     rect: entry.value.rect,
                     child: Tooltip(
-                      message: '${widget.idToString(entry.key)}', // Pass the tooth name directly here
+                      message: widget.idToString(entry.key),
                       textAlign: TextAlign.center,
                       preferBelow: false,
                       decoration: const BoxDecoration(
@@ -352,7 +408,7 @@ class _FooState extends State<Foo> {
                         duration: const Duration(milliseconds: 750),
                         clipBehavior: Clip.antiAlias,
                         decoration: ShapeDecoration(
-                          color: entry.value.selected ? Colors.teal.shade400 : Colors.white,
+                          color: entry.value.selected ? Colors.teal.shade400 : Colors.white, // Set color to white for unselected teeth
                           shadows: entry.value.selected
                               ? [const BoxShadow(blurRadius: 4, offset: Offset(0, 6))]
                               : null,
@@ -361,8 +417,7 @@ class _FooState extends State<Foo> {
                         child: Material(
                           type: MaterialType.transparency,
                           child: InkWell(
-                            splashColor:
-                            entry.value.selected ? Colors.white : Colors.teal.shade400,
+                            splashColor: entry.value.selected ? Colors.white : Colors.teal.shade400,
                             highlightColor: Colors.transparent,
                             onTap: () {
                               setState(() {
@@ -375,7 +430,6 @@ class _FooState extends State<Foo> {
                       ),
                     ),
                   ),
-                // selected teeth list
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 125, vertical: 150),
                   child: Center(
@@ -415,7 +469,6 @@ class _FooState extends State<Foo> {
       ),
     );
   }
-
 
   Future<Data> loadTeeth(String asset) async {
     final xml = await rootBundle.loadString(asset);
@@ -478,31 +531,10 @@ class ToothBorder extends ShapeBorder {
   ShapeBorder scale(double t) => this;
 }
 
-
-
 String adultIdToString(int id) {
   if (id < 0 || id > 36) {
-    return ''; // Return empty string for teeth outside the range 1-36
+    return '';
   }
-  final number = id ;
+  final number = id;
   return 'Tooth #$number';
-}
-/*String adultIdToString(int id) {
-  final (up, left, number) = switch (id) {
-    < 8 => (true, false, 8 - id),
-    < 16 => (true, true, id - 8 + 1),
-    < 24 => (false, true, 24 - id),
-    _ => (false, false, id - 24 + 1),
-  };
-  return '${up ? 'up' : 'down'} ${left ? 'left' : 'right'} #$number';
-}
-*/
-String childIdToString(int id) {
-  final (up, left, number) = switch (id) {
-    < 6 => (true, false, 6 - id),
-    < 12 => (true, true, id - 6 + 1),
-    < 18 => (false, true, 18 - id),
-    _ => (false, false, id - 18 + 1),
-  };
-  return '${up ? 'up' : 'down'} ${left ? 'left' : 'right'} #$number';
 }

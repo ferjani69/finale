@@ -103,28 +103,27 @@ class _SearchPageState extends State<SearchPage> {
     return Scaffold(
       backgroundColor: const Color(0XFFF6F4EB),
       appBar: AppBar(
-    backgroundColor: Colors.blue,
-    leading: IconButton(
-    icon: const Icon(Icons.menu),  // Drawer icon
-    onPressed: () {
-    Scaffold.of(context).openDrawer();  // Open the drawer
-    },
-    ),
-    title: Center(
-    child: SizedBox(
-      height: 200,
-      width: 120,
-      child: Image.asset(
+        backgroundColor: Colors.blue,
+        leading: Builder(
+          builder: (context) {
+            return IconButton(
+              icon: const Icon(Icons.menu),  // Drawer icon
+              onPressed: () {
+                Scaffold.of(context).openDrawer();  // Open the drawer
+              },
+            );
+          }
+        ),
+        title: Image.asset(
+              'assets/dentalexpert.png', // Ensure the asset path is correct
+              height: 55,  // Adjusted for visibility
+            ),
+        centerTitle: true,
+          ),
 
-      'assets/dentalexpert.png', // Ensure the asset path is correct
-      height: 55,  // Adjusted for visibility
-      ),
-    ),
-    ),
-      ),
-      drawer:  Drawerw(), // Use the AppDrawer widget here
 
-      body: Padding(
+      drawer:  Drawerw(),
+     body: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.start,
