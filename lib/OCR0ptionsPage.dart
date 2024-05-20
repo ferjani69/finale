@@ -28,7 +28,7 @@ class _OCROptionsPageState extends State<OCROptionsPage> {
       patientData = parsePatientData(text!);
     });
 
-    print('Extracted Data: $patientData'); // Debug print to check extracted data
+    // Debug print to check extracted data
   }
 
   Future<void> _pickImage(ImageSource source) async {
@@ -78,7 +78,7 @@ class _OCROptionsPageState extends State<OCROptionsPage> {
     if (matchProfession != null) patientData['profession'] = matchProfession.group(1)?.trim() ?? '';
     if (matchReference != null) patientData['reference'] = matchReference.group(1)?.trim() ?? '';
 
-    print('Parsed Data: $patientData'); // Debug print to check parsed data
+    // Debug print to check parsed data
 
     return patientData;
   }
@@ -99,12 +99,12 @@ class _OCROptionsPageState extends State<OCROptionsPage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text(
+            const Text(
               'OCR Options',
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
-                color: const Color(0xff4A6572),
+                color: Color(0xff4A6572),
               ),
               textAlign: TextAlign.center,
             ),
@@ -148,21 +148,21 @@ class _OCROptionsPageState extends State<OCROptionsPage> {
             ),
             if (text != null) ...[
               const SizedBox(height: 20),
-              Text(
+              const Text(
                 'Extracted Text:',
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
-                  color: const Color(0xff4A6572),
+                  color: Color(0xff4A6572),
                 ),
               ),
               Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: Text(
                   text!,
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 16,
-                    color: const Color(0xff4A6572),
+                    color: Color(0xff4A6572),
                   ),
                 ),
               ),

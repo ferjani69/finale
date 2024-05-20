@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:search/OCR0ptionsPage.dart';
-import 'package:search/main.dart';
 import 'package:search/Patients%20class/patient.dart';
 import 'package:intl/intl.dart';
-import 'package:search/Patients%20class/ptientsList.dart';
 import 'Widgets/Drawerwidget.dart'; // Import the AppDrawer widget
 import 'Widgets/Voicett.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
