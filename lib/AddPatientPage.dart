@@ -374,10 +374,15 @@ class _AddPatientPageState extends State<AddPatientPage> {
                 SizedBox(
                   height: 50,
                   width: double.infinity,
+
                   child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(backgroundColor: const Color(0xff91C8E4)),
+
+
+                    style: ElevatedButton.styleFrom(backgroundColor: const Color(0xff91C8E4),),
                     onPressed: _submitForm,
+
                     child: const Text("Submit Your Patient"),
+
                   ),
                 ),
               ],

@@ -53,7 +53,7 @@ class _OCROptionsPageState extends State<OCROptionsPage> {
 
     final RegExp firstNameRegex = RegExp(r'Prénom\s*[:.,]*\s*(.*)');
     final RegExp lastNameRegex = RegExp(r'Nom\s*[:.,]*\s*(.*)');
-    final RegExp phoneRegex = RegExp(r'Tél\s*[:.,]*\s*([\d\s,\-;]+)');
+    final RegExp phoneRegex = RegExp(r'Tél.\s*[:.,]*\s*([\d\s,\-;]+)');
     final RegExp birthDateRegex = RegExp(r'Date de Naissance\s*[:.,]*\s*(\d{4}-\d{2}-\d{2}|\d{4}/\d{2}/\d{2})');
     final RegExp addressRegex = RegExp(r'Adresse\s*[:.,]*\s*(.*)');
     final RegExp professionRegex = RegExp(r'Profession\s*[:.,]*\s*(.*)');

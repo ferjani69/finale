@@ -2,10 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:search/Patients%20class/patient.dart';
 import 'package:search/treatement_records_page.dart';
-import 'Widgets/Drawerwidget.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_core/firebase_core.dart' ;
-import 'package:get/get.dart';
 class ViewPatientPage extends StatelessWidget {
   final Patient patient;
 
@@ -17,6 +13,7 @@ class ViewPatientPage extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Patient Details'),
         backgroundColor: const Color(0xff91C8E4),
+        centerTitle: true,
       ),
 
       body: SingleChildScrollView(
@@ -41,7 +38,7 @@ class ViewPatientPage extends StatelessWidget {
                     },
                     child: const Text(
                       'View Treatments',
-                      style: TextStyle(fontSize: 14.0),
+                      style: TextStyle(color: Colors.white,fontSize: 14.0),
                     ),
                   ),
                   ElevatedButton(
@@ -54,7 +51,7 @@ class ViewPatientPage extends StatelessWidget {
                     },
                     child: const Text(
                       'View Appointments',
-                      style: TextStyle(fontSize: 14.0),
+                      style: TextStyle(color: Colors.white,fontSize: 14.0),
                     ),
                   ),
                 ],
@@ -86,7 +83,7 @@ class ViewPatientPage extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(16.0),
         decoration: BoxDecoration(
-          color: const Color(0xffECF9FF),
+          color: const Color(0xffBFCFE7),
           borderRadius: BorderRadius.circular(10.0),
         ),
         child: Row(
