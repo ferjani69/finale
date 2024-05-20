@@ -27,6 +27,8 @@ class _OCROptionsPageState extends State<OCROptionsPage> {
       text = recognizedText.text;
       patientData = parsePatientData(text!);
     });
+
+    print('Extracted Data: $patientData'); // Debug print to check extracted data
   }
 
   Future<void> _pickImage(ImageSource source) async {
@@ -49,13 +51,13 @@ class _OCROptionsPageState extends State<OCROptionsPage> {
   Map<String, String> parsePatientData(String text) {
     final Map<String, String> patientData = {};
 
-    final RegExp firstNameRegex = RegExp(r'Full name\s*:\s*(.*)');
-    final RegExp lastNameRegex = RegExp(r'Last name\s*:\s*(.*)');
-    final RegExp phoneRegex = RegExp(r'Phone number\s*:\s*(\d+)');
-    final RegExp birthDateRegex = RegExp(r'Birthdate\s*:\s*(\d{2}/\d{2}/\d{4})');
-    final RegExp addressRegex = RegExp(r'Adress\s*:\s*(.*)');
-    final RegExp professionRegex = RegExp(r'Profession\s*:\s*(.*)');
-    final RegExp referenceRegex = RegExp(r'Reference\s*:\s*(.*)');
+    final RegExp firstNameRegex = RegExp(r'Prénom\s*[:.,]*\s*(.*)');
+    final RegExp lastNameRegex = RegExp(r'Nom\s*[:.,]*\s*(.*)');
+    final RegExp phoneRegex = RegExp(r'Tél\s*[:.,]*\s*([\d\s,\-;]+)');
+    final RegExp birthDateRegex = RegExp(r'Date de Naissance\s*[:.,]*\s*(\d{4}-\d{2}-\d{2}|\d{4}/\d{2}/\d{2})');
+    final RegExp addressRegex = RegExp(r'Adresse\s*[:.,]*\s*(.*)');
+    final RegExp professionRegex = RegExp(r'Profession\s*[:.,]*\s*(.*)');
+    final RegExp referenceRegex = RegExp(r'Adressé par\s*[:.,]*\s*(.*)');
 
     final matchFirstName = firstNameRegex.firstMatch(text);
     final matchLastName = lastNameRegex.firstMatch(text);
@@ -67,14 +69,23 @@ class _OCROptionsPageState extends State<OCROptionsPage> {
 
     if (matchFirstName != null) patientData['firstName'] = matchFirstName.group(1)?.trim() ?? '';
     if (matchLastName != null) patientData['lastName'] = matchLastName.group(1)?.trim() ?? '';
-    if (matchPhone != null) patientData['phoneNumber'] = matchPhone.group(1)?.trim() ?? '';
+    if (matchPhone != null) {
+      String rawPhoneNumber = matchPhone.group(1)?.replaceAll(RegExp(r'[^0-9]'), '') ?? '';
+      patientData['phoneNumber'] = rawPhoneNumber;
+    }
     if (matchBirthDate != null) patientData['birthDate'] = matchBirthDate.group(1)?.trim() ?? '';
     if (matchAddress != null) patientData['address'] = matchAddress.group(1)?.trim() ?? '';
     if (matchProfession != null) patientData['profession'] = matchProfession.group(1)?.trim() ?? '';
     if (matchReference != null) patientData['reference'] = matchReference.group(1)?.trim() ?? '';
 
+    print('Parsed Data: $patientData'); // Debug print to check parsed data
+
     return patientData;
   }
+
+
+
+
 
   @override
   Widget build(BuildContext context) {

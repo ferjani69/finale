@@ -89,7 +89,8 @@ flutter:
     - assets/wavestop.svg
     - assets/Privacypolicy.md
     - assets/female.png
-    - assets/dentalexpert.png
+    - assets/appbar_logo.png
+
 
 
   # The following line ensures that the Material Icons font is

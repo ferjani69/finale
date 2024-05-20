@@ -85,24 +85,22 @@ class _AddPatientPageState extends State<AddPatientPage> {
 
   void _submitForm() {
     if (_formkey.currentState!.validate()) {
-      // Retrieve values from controllers
       String firstName = firstNameController.text;
       String lastName = lastNameController.text;
       String phoneNumber = phoneNumberController.text;
-      String birthDateString = birthDateController.text; // Get the birth date string
+      String birthDateString = birthDateController.text;
 
-      // Convert the birth date string into a DateTime object
       DateTime? birthdate;
       try {
-        birthdate = DateFormat('yyyy-MM-dd').parse(birthDateString);
+        birthdate = DateFormat('yyyy-MM-dd').parse(birthDateString.replaceAll('/', '-'));
       } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Invalid date format. Please use YYYY-MM-DD.'),
+            content: Text('Invalid date format. Please use YYYY-MM-DD or YYYY/MM/DD.'),
             backgroundColor: Colors.red,
           ),
         );
-        return; // Exit if the date parse fails
+        return;
       }
       String formattedDate = DateFormat('yyyy-MM-dd').format(birthdate);
 
@@ -110,17 +108,17 @@ class _AddPatientPageState extends State<AddPatientPage> {
       String profession = professionController.text;
       String reference = referenceController.text;
 
-      // Create a new Patient object with the form data
       Patient newPatient = Patient(
-        "unique_id", // Generate or assign a unique ID for the new patient
+        "unique_id",
         firstName,
         lastName,
         int.parse(phoneNumber),
-        birthdate, // Assign the parsed birth date
+        birthdate,
         address,
         profession,
         reference,
       );
+
       firstNameController.clear();
       lastNameController.clear();
       addressController.clear();
@@ -128,7 +126,7 @@ class _AddPatientPageState extends State<AddPatientPage> {
       referenceController.clear();
       phoneNumberController.clear();
       birthDateController.clear();
-      // Add the new patient to the patient_list
+
       widget.patientadd(newPatient);
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -140,18 +138,16 @@ class _AddPatientPageState extends State<AddPatientPage> {
         'firstname': firstName,
         'lastname': lastName,
         'phonenumber': phoneNumber,
-        'dateOfBirth': formattedDate, // Firestore will handle DateTime correctly
+        'dateOfBirth': formattedDate,
         'address': address,
         'profession': profession,
         'reference': reference,
       }).then((docRef) {
-        // Update the ID of newPatient if necessary
         newPatient.id = docRef.id;
       }).catchError((error) {
         // Handle error
       });
     } else {
-      // Show snackbar for invalid input
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Please check your inputs'),
@@ -159,6 +155,7 @@ class _AddPatientPageState extends State<AddPatientPage> {
       );
     }
   }
+
 
   String? _validatePhonenumber(String? value) {
     if (value == null || value.isEmpty) {

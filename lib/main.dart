@@ -115,7 +115,7 @@ class _SearchPageState extends State<SearchPage> {
           }
         ),
         title: Image.asset(
-              'assets/dentalexpert.png', // Ensure the asset path is correct
+              'assets/appbar_logo.png', // Ensure the asset path is correct
               height: 55,  // Adjusted for visibility
             ),
         centerTitle: true,

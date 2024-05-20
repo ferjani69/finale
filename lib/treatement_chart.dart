@@ -29,6 +29,7 @@ class _TreatmentChartState extends State<TreatmentChart> {
   final TextEditingController notesController = TextEditingController();
   final TextEditingController doitController = TextEditingController();
   final TextEditingController recuController = TextEditingController();
+
   void populateFormFields(Map<String, String> data) {
     setState(() {
       dateController.text = data['Date'] ?? '';
@@ -37,14 +38,16 @@ class _TreatmentChartState extends State<TreatmentChart> {
       doitController.text = data['Doit'] ?? '';
       recuController.text = data['Reçu'] ?? '';
     });
-  }void navigateToOCR() async {
+  }
+
+  void navigateToOCR() async {
     final result = await Navigator.push(
-        context,
-        MaterialPageRoute(
-            builder: (context) => OCR(
-              onDataCollected: populateFormFields,
-            )
-        )
+      context,
+      MaterialPageRoute(
+        builder: (context) => OCR(
+          onDataCollected: populateFormFields,
+        ),
+      ),
     );
 
     if (result != null) {
@@ -52,27 +55,62 @@ class _TreatmentChartState extends State<TreatmentChart> {
     }
   }
 
-  List<Map<String, String>> parseExtractedText(String extractedText) {
-    List<Map<String, String>> treatments = [];
-    List<String> lines = extractedText.split('\n');
-
-    for (String line in lines) {
-      List<String> columns = line.split(RegExp(r'\s+'));
-      if (columns.length == 5) {
-        treatments.add({
-          'date': columns[0],
-          'dent': columns[1],
-          'natureInterv': columns[2],
-          'doit': columns[3],
-          'recu': columns[4],
-        });
-      }
+  bool isValidDate(String input) {
+    // Check yyyy-mm-dd format
+    final regExp1 = RegExp(r'^\d{4}-\d{2}-\d{2}$');
+    if (regExp1.hasMatch(input)) {
+      return true;
     }
 
-    return treatments;
+    // Check yyyy/mm/dd format
+    final regExp2 = RegExp(r'^\d{4}/\d{2}/\d{2}$');
+    if (regExp2.hasMatch(input)) {
+      return true;
+    }
+
+    return false;
   }
 
+  String? dateValidator(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Please enter a Date';
+    }
+    if (!isValidDate(value)) {
+      return 'Please enter a valid Date (yyyy-mm-dd or yyyy/mm/dd)';
+    }
+    return null;
+  }
 
+  @override
+  void initState() {
+    super.initState();
+
+    dateController.addListener(() {
+      if (_formKey.currentState!.validate()) {
+        _formKey.currentState!.save();
+      }
+    });
+    natureIntervController.addListener(() {
+      if (_formKey.currentState!.validate()) {
+        _formKey.currentState!.save();
+      }
+    });
+    notesController.addListener(() {
+      if (_formKey.currentState!.validate()) {
+        _formKey.currentState!.save();
+      }
+    });
+    doitController.addListener(() {
+      if (_formKey.currentState!.validate()) {
+        _formKey.currentState!.save();
+      }
+    });
+    recuController.addListener(() {
+      if (_formKey.currentState!.validate()) {
+        _formKey.currentState!.save();
+      }
+    });
+  }
 
   void _showdatepicker() async {
     final DateTime? selectedDate = await showDatePicker(
@@ -100,7 +138,7 @@ class _TreatmentChartState extends State<TreatmentChart> {
 
       Treatement newTreat = Treatement(
         null,
-        DateTime.parse(treatDate),
+        DateTime.parse(treatDate.replaceAll('/', '-')),
         dent,
         natureIntv,
         notes,
@@ -147,7 +185,7 @@ class _TreatmentChartState extends State<TreatmentChart> {
         actions: [
           IconButton(
             padding: const EdgeInsets.only(right: 30.0),
-            onPressed: navigateToOCR ,
+            onPressed: navigateToOCR,
             icon: const Icon(Icons.camera_alt),
             iconSize: 30,
           ),
@@ -173,19 +211,14 @@ class _TreatmentChartState extends State<TreatmentChart> {
                   onTap: _showdatepicker,
                   controller: dateController,
                   decoration: InputDecoration(
-                    labelText: 'Treatment Date (YYYY-MM-DD)',
+                    labelText: 'Treatment Date (YYYY-MM-DD or YYYY/MM/DD)',
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10.0),
                     ),
                     filled: true,
                     fillColor: Colors.white,
                   ),
-                  validator: (value) {
-                    if (value!.isEmpty) {
-                      return 'Please enter a Date';
-                    }
-                    return null;
-                  },
+                  validator: dateValidator,
                 ),
                 const SizedBox(height: 16),
                 Row(
@@ -286,6 +319,7 @@ class _TreatmentChartState extends State<TreatmentChart> {
                   children: [
                     Expanded(
                       child: TextFormField(
+                        autovalidateMode: AutovalidateMode.onUserInteraction,
                         controller: recuController,
                         keyboardType: TextInputType.number,
                         inputFormatters: <TextInputFormatter>[

@@ -55,7 +55,7 @@ class _TreatmentRecordsPageState extends State<TreatmentRecordsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Treatment Records - ${widget.patient.pname} ${widget.patient.plname}'),
+        title: Text('Treatment Records'),
         backgroundColor: const Color(0xff91C8E4),
       ),
       body:Padding(
