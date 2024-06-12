@@ -10,7 +10,7 @@ class Privacypolicy extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        titleTextStyle: TextStyle(color: Colors.white,fontWeight: FontWeight.bold,fontSize: 25),
+        titleTextStyle: const TextStyle(color: Colors.white,fontWeight: FontWeight.bold,fontSize: 25),
         backgroundColor: Colors.blue[700], // Matching the SearchPage AppBar background color
         leading: Builder(
           builder: (context) => IconButton(
@@ -25,7 +25,7 @@ class Privacypolicy extends StatelessWidget {
         const Text('Privacy Policy'), // Keeping the original title
         centerTitle: true, // Centering the title
       ),
-      drawer:  Drawerw(),
+      drawer:  const Drawerw(),
 
       body: Center(
         child: SizedBox(

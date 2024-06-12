@@ -37,6 +37,7 @@ dependencies:
   flutter_secure_storage: ^4.2.1
   markdown_widget: ^2.3.2+6
   firebase_storage: ^11.7.5
+  syncfusion_flutter_calendar: ^20.3.61
 
 
 
@@ -90,6 +91,7 @@ flutter:
     - assets/Privacypolicy.md
     - assets/female.png
     - assets/appbar_logo.png
+    - assets/
 
 
 

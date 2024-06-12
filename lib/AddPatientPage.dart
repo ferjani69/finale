@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:search/OCR0ptionsPage.dart';
 import 'package:search/Patients%20class/patient.dart';
-import 'package:intl/intl.dart';
+import "package:intl/intl.dart" show DateFormat;
 import 'Widgets/Drawerwidget.dart'; // Import the AppDrawer widget
 import 'Widgets/Voicett.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -126,6 +126,7 @@ class _AddPatientPageState extends State<AddPatientPage> {
       birthDateController.clear();
 
       widget.patientadd(newPatient);
+      Navigator.pop(context);
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Patient added successfully'),
@@ -201,7 +202,7 @@ class _AddPatientPageState extends State<AddPatientPage> {
           ),
         ],
       ),
-      drawer: Drawerw(), // Use the AppDrawer widget here
+      drawer: const Drawerw(), // Use the AppDrawer widget here
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: SingleChildScrollView(
@@ -313,9 +314,9 @@ class _AddPatientPageState extends State<AddPatientPage> {
                           if (value!.isEmpty) {
                             return "Please enter an address";
                           }
-                          // Check if the value contains only alphabetic characters, spaces, and periods (.)
-                          if (!RegExp(r'^[a-zA-Z\s.]+$').hasMatch(value)) {
-                            return "Please enter a valid address containing only alphabetic characters, spaces, and periods";
+                          // Check if the value contains only alphanumeric characters, spaces, periods, and French special characters
+                          if (!RegExp(r'^[a-zA-Z0-9\s.!@#%^&*()\-_+=?<>;:,\[\]{}|`~éçÀÁÂÃÄÅàáâãäåÒÓÔÕÖØòóôõöøÈÉÊËèêëÇÌÍÎÏìíîïÙÚÛÜùúûüÝýÿ]+$').hasMatch(value)) {
+                            return "Please enter a valid address containing only alphanumeric characters, spaces, periods, and French special characters";
                           }
                           return null;
                         },
@@ -337,16 +338,7 @@ class _AddPatientPageState extends State<AddPatientPage> {
                             borderRadius: BorderRadius.circular(10.0),
                           ),
                         ),
-                        validator: (value) {
-                          if (value!.isEmpty) {
-                            return "Please enter a profession";
-                          }
-                          // Check if the value contains only alphabetic characters
-                          if (!RegExp(r'^[a-zA-Z]+$').hasMatch(value)) {
-                            return "Please enter a valid profession containing only alphabetic characters";
-                          }
-                          return null;
-                        },
+                        validator: _validateName
                       ),
                     ),
                     Voicett(controller: professionController),

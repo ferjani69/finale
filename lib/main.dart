@@ -1,14 +1,13 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:search/AddPatientPage.dart';
 import 'package:search/Widgets/Drawerwidget.dart';
 import 'package:search/Patients%20class/patient.dart';
+import 'package:search/Widgets/splash_screen.dart';
 import 'package:search/edit_patient_page.dart';
 import 'package:search/ViewPatientPage.dart';
 // Import the AppDrawer widget
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart' ;
-import 'package:search/Login.dart';
 void main() async{
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
@@ -23,8 +22,8 @@ class MyApp extends StatelessWidget {
   @override
 
   Widget build(BuildContext context) {
-    return  MaterialApp(
-      home: LoginPage(),    );
+    return  const MaterialApp(
+      home: SplashScreen(),    );
   }
 }
 
@@ -101,7 +100,7 @@ class _SearchPageState extends State<SearchPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0XFFF6F4EB),
+      backgroundColor:  Colors.white,
       appBar: AppBar(
         backgroundColor: Colors.blue,
         leading: Builder(
@@ -122,7 +121,7 @@ class _SearchPageState extends State<SearchPage> {
           ),
 
 
-      drawer:  Drawerw(),
+      drawer:  const Drawerw(),
      body: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -149,7 +148,7 @@ class _SearchPageState extends State<SearchPage> {
                       decoration: InputDecoration(
                         filled: true,
                         fillColor: const Color(0xff91C8E4),
-                        hintText:  "eg Youssef Ferjani",
+                        hintText:  "Nom du Patient ou Tel",
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8.0),
                           borderSide: BorderSide.none,
@@ -168,7 +167,7 @@ class _SearchPageState extends State<SearchPage> {
                             setState(() {
                               display_list.add(newPatient);
                             });
-                          }, initialData: {},
+                          }, initialData: const {},
                         ),
                       ),
                     );

@@ -1,14 +1,13 @@
-import 'dart:ui';
 import 'package:search/forgotpw.dart';
 import 'package:search/main.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:search/forgotpw.dart';
 
 class LoginPage extends StatefulWidget {
+  const LoginPage({super.key});
+
   @override
   _LoginPageState createState() => _LoginPageState();
 }
@@ -17,7 +16,7 @@ class _LoginPageState extends State<LoginPage> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
-  final storage = FlutterSecureStorage();
+  final storage = const FlutterSecureStorage();
   bool _isLoading = false;
   bool _isHidden = true; // Tracks whether the password is hidden or visible
 
@@ -44,10 +43,11 @@ class _LoginPageState extends State<LoginPage> {
         if (token!= null) {
           await storage.write(key: 'firebase_token', value: token);
         }
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Login successful')));
-        Navigator.pushReplacement(
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Login successful')));
+        Navigator.pushAndRemoveUntil(
           context,
-          MaterialPageRoute(builder: (context) => SearchPage(patientadd: null)),
+          MaterialPageRoute(builder: (context) => const SearchPage(patientadd: null)),
+              (Route<dynamic> route) => false,
         );
       } catch (e) {
         setState(() => _isLoading = false);
@@ -126,19 +126,19 @@ class _LoginPageState extends State<LoginPage> {
                 children: <Widget>[
                   TextFormField(
                     controller: emailController,
-                    decoration: InputDecoration(
+                    decoration: const InputDecoration(
                       labelText: 'Email',
                       prefixIcon: Icon(Icons.email),
                     ),
                     validator: _validateEmail,
                     keyboardType: TextInputType.emailAddress,
                   ),
-                  SizedBox(height: 8.0),
+                  const SizedBox(height: 8.0),
                   TextFormField(
                     controller: passwordController,
                     decoration: InputDecoration(
                       labelText: 'Password',
-                      prefixIcon: Icon(Icons.lock),
+                      prefixIcon: const Icon(Icons.lock),
                       suffixIcon: InkWell(
                         onTap: _togglePasswordView,
                         child: Icon(
@@ -149,10 +149,10 @@ class _LoginPageState extends State<LoginPage> {
                     validator: _validatePassword,
                     obscureText: _isHidden,
                   ),
-                  SizedBox(height: 24.0),
+                  const SizedBox(height: 24.0),
                   ElevatedButton(
                     onPressed: _isLoading? null : login,
-                    child: _isLoading? CircularProgressIndicator(color: Colors.white) : Text('Login'),
+                    child: _isLoading? const CircularProgressIndicator(color: Colors.white) : const Text('Login'),
                   ),
                   TextButton(
                     onPressed: () {
@@ -163,7 +163,7 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                       );
                     },
-                    child: Text('Forgot password?'),
+                    child: const Text('Forgot password?'),
                   ),
                 ],
               ),

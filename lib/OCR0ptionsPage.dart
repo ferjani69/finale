@@ -23,13 +23,19 @@ class _OCROptionsPageState extends State<OCROptionsPage> {
     final inputImage = InputImage.fromFilePath(img.path);
     final RecognizedText recognizedText = await textRecognizer.processImage(inputImage);
 
-    setState(() {
-      text = recognizedText.text;
-      patientData = parsePatientData(text!);
-    });
-
-    // Debug print to check extracted data
+    if (recognizedText.text.isEmpty) {
+      setState(() {
+        text = "No text found or irrelevant content";
+        patientData = null;
+      });
+    } else {
+      setState(() {
+        text = recognizedText.text;
+        patientData = parsePatientData(text!);
+      });
+    }
   }
+
 
   Future<void> _pickImage(ImageSource source) async {
     try {

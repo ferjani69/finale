@@ -1,12 +1,14 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/cupertino.dart'; // Import Cupertino for the CupertinoIcons
+// Import Cupertino for the CupertinoIcons
 import 'package:search/Feedback.dart';
 import 'package:search/Login.dart';
 import 'package:search/Privacy.dart';
+import 'package:search/appointment_module/main.dart';
 import 'package:search/main.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 class Drawerw extends StatefulWidget {
-   Drawerw({Key? key}) : super(key: key);
+   const Drawerw({super.key});
 
   @override
   State<Drawerw> createState() => _DrawerwState();
@@ -36,22 +38,25 @@ class _DrawerwState extends State<Drawerw> {
             (route) => false,
       );
     } catch (e) {
-      print(e); // Handle any errors
+      if (kDebugMode) {
+        print(e);
+      } // Handle any errors
     }
   }
 
+  @override
   Widget build(BuildContext context) {
     return Drawer(
       child: ListView(
         padding: EdgeInsets.zero,
         children: [
            UserAccountsDrawerHeader(
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               color: Colors.blue,
             ),
-            accountName: Text("Dentist Rim"), // Replace with user's name
+            accountName: const Text("Dentist Rim"), // Replace with user's name
             accountEmail: Text(userEmail!), // Replace with user's email
-            currentAccountPicture: CircleAvatar(
+            currentAccountPicture: const CircleAvatar(
               backgroundImage: AssetImage('assets/female.png'),
             ),
           ),
@@ -59,8 +64,11 @@ class _DrawerwState extends State<Drawerw> {
             leading: const Icon(Icons.calendar_today), // Add the calendar icon
             title: const Text('Appointments'), // Specify the title
             onTap: () {
-              // Handle tap event
-            },
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const AppointmentCalendar()),
+              );
+              },
           ),
           ListTile(
             leading: const Icon(Icons.people), // Person icon
@@ -77,7 +85,7 @@ class _DrawerwState extends State<Drawerw> {
             title: const Text('Send Feedback'), // Specify the title
             onTap: () {Navigator.pushReplacement(
                 context,
-                MaterialPageRoute(builder: (context) => FeedbackFormPage(),));
+                MaterialPageRoute(builder: (context) => const FeedbackFormPage(),));
               // Handle tap event
               // Handle tap event
             },
@@ -87,17 +95,17 @@ class _DrawerwState extends State<Drawerw> {
             title: const Text('Privacy and Policy'), // Specify the title
             onTap: () {Navigator.pushReplacement(
               context,
-              MaterialPageRoute(builder: (context) => Privacypolicy(),));
+              MaterialPageRoute(builder: (context) => const Privacypolicy(),));
               // Handle tap event
             },
           ),
-          ListTile(
-            leading: const Icon(Icons.settings), // Settings icon
-            title: const Text('Settings'), // Specify the title
-            onTap: () {
-              // Handle tap event
-            },
-          ),
+          // ListTile(
+          //   leading: const Icon(Icons.settings), // Settings icon
+          //   title: const Text('Settings'), // Specify the title
+          //   onTap: () {
+          //     // Handle tap event
+          //   },
+          // ),
           ListTile(
             leading: const Icon(Icons.logout_rounded), // logout
             title: const Text('Log Out '), // Specify the title

@@ -40,7 +40,7 @@ class Forgotpw extends StatelessWidget {
                   if (_formKey.currentState!.validate()) {
                     try {
                     await FirebaseAuth.instance.sendPasswordResetEmail(email: _emailController.text);
-                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Recuperation Password Email Sent Succesfully ")));
+                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Recuperation Password Email Sent Succesfully ")));
                   } catch (e) {
                   // Handle error, show error message
                   }

@@ -1,15 +1,15 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_svg_provider/flutter_svg_provider.dart';
 import 'package:path_drawing/path_drawing.dart';
 import 'package:search/Patients%20class/patient.dart';
-import 'package:search/treatement_records_page.dart';
 import 'package:search/Widgets/Voicett.dart';
 import 'treatement.dart';
 import 'package:xml/xml.dart';
 import 'Widgets/Drawerwidget.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'OCR.dart';
+
 
 String dent = '';
 
@@ -157,7 +157,9 @@ class _TreatmentChartState extends State<TreatmentChart> {
         widget.addtreat(newTreat);
         Navigator.pop(context, true);
       }).catchError((error) {
-        print("Error adding document: $error");
+        if (kDebugMode) {
+          print("Error adding document: $error");
+        }
         Navigator.pop(context, false);
       });
 
@@ -191,7 +193,7 @@ class _TreatmentChartState extends State<TreatmentChart> {
           ),
         ],
       ),
-      drawer: Drawerw(),
+      drawer: const Drawerw(),
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
@@ -242,7 +244,7 @@ class _TreatmentChartState extends State<TreatmentChart> {
                           if (value.startsWith(' ')) {
                             return 'Nature of intervention cannot start with a space';
                           }
-                          if (!RegExp(r'^[a-zA-Z0-9\s]+$').hasMatch(value)) {
+                          if (!RegExp(r'^[a-zA-Z0-9\s.!@#%^&*()\-_+=?<>;:,\[\]{}|`~éçÀÁÂÃÄÅàáâãäåÒÓÔÕÖØòóôõöøÈÉÊËèêëÇÌÍÎÏìíîïÙÚÛÜùúûüÝýÿ]+$').hasMatch(value)) {
                             return 'Please enter valid nature of intervention';
                           }
                           return null;
@@ -274,7 +276,7 @@ class _TreatmentChartState extends State<TreatmentChart> {
                           if (value.startsWith(' ')) {
                             return 'Note cannot start with a space';
                           }
-                          if (!RegExp(r'^[a-zA-Z0-9\s]+$').hasMatch(value)) {
+                          if (!RegExp(r'^[a-zA-Z0-9\s.!@#%^&*()\-_+=?<>;:,\[\]{}|`~éçÀÁÂÃÄÅàáâãäåÒÓÔÕÖØòóôõöøÈÉÊËèêëÇÌÍÎÏìíîïÙÚÛÜùúûüÝýÿ]+$').hasMatch(value)) {
                             return 'Please enter valid Note';
                           }
                           return null;
